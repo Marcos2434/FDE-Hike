@@ -26,7 +26,7 @@ Graph Database for Similarity: Consider using a graph database to establish rela
 ./start.sh
 ```
 
-If you get a permission error, first, check the current permissions of the start.sh script
+If you get a permission error, check the current permissions of the start.sh script
 ```sh
 ls -l start.sh
 ```
