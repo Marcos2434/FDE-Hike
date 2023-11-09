@@ -21,7 +21,8 @@ Graph Database for Similarity: Consider using a graph database to establish rela
 
 ## How to run
 
-## Automatic startup (macos/linux)
+## Automatic startup
+### MacOS / Linux 
 ```sh
 ./start.sh
 ```
@@ -36,7 +37,21 @@ If the script doesn't have execute permissions, you can add them using the chmod
 chmod +x start.sh
 ```
 
-You should then be able to run the initial command
+You should then be able to run the initial command.
+
+### Windows
+```ps1
+.\start.ps1
+```
+
+You might need to adjust the PowerShell execution policy to allow running scripts. You can do this by running:
+```ps1
+Set-ExecutionPolicy RemoteSigned
+```
+Choose "Yes" or "Yes to All" when prompted.
+
+You should then be able to run the initial command.
+
 
 ## Manual Startup (all)
 
