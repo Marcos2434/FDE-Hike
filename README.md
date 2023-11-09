@@ -22,13 +22,19 @@ Graph Database for Similarity: Consider using a graph database to establish rela
 ## How to run
 
 ## Automatic startup (macos/linux)
-`./start.sh`
+```sh
+./start.sh
+```
 
 If you get a permission error, first, check the current permissions of the start.sh script
-`ls -l start.sh`
+```sh
+ls -l start.sh
+```
 
 If the script doesn't have execute permissions, you can add them using the chmod command
-`chmod +x start.sh`
+```sh
+chmod +x start.sh
+```
 
 You should then be able to run the initial command
 
