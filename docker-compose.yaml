@@ -214,4 +214,4 @@ services:
     restart: always
 
 volumes:
-  postgres-db-volume:/airflow
+  /postgres-db-volume:/airflow
