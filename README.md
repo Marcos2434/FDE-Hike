@@ -41,20 +41,6 @@ chmod +x start.sh
 
 You should then be able to run the initial command.
 
-### Windows
-```ps1
-.\start.ps1
-```
-
-You might need to adjust the PowerShell execution policy to allow running scripts. You can do this by running:
-```ps1
-Set-ExecutionPolicy RemoteSigned
-```
-Choose "Yes" or "Yes to All" when prompted.
-
-You should then be able to run the initial command.
-
-
 ## Manual Startup (all)
 
 
