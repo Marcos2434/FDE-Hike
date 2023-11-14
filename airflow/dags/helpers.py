@@ -1,5 +1,14 @@
 import praw
 import json
+import os
+import csv
+
+import spacy
+from collections import Counter
+
+BASE_DIR = '/opt/airflow/'
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+KEYWORDS_DIR = os.path.join(BASE_DIR, 'keywords')
 
 reddit_credentials = praw.Reddit(
     client_id="FmDPjXlF33v45zALJvQuEg",
@@ -49,6 +58,55 @@ def call_reddit_api(hike_name, limit, subreddit_name='all'):
     # Serialize the results in JSON format
     json_result = json.dumps(publicaciones, indent=4, ensure_ascii=False)
 
-    with open("posts.json", "w", encoding="utf-8") as f: f.write(json_result)
+    # Save the results in a file
+    with open(os.path.join(DATA_DIR, 'posts.json'), "w", encoding="utf-8") as f:
+        f.write(json_result)
+    
 
+def natural_language_processing():
+    
+    # Load the keywords
+    keywords = {}
+    for root, dirs, files in os.walk(KEYWORDS_DIR):
+        for file in files:
+            if file.endswith(".csv"):
+                with open(os.path.join(root, file), "r", encoding="utf-8") as f:
+                    filename = file.split(".")[0]
+                    keywords[filename] = [word.strip() for word in next(csv.reader(f))]
+    
+    nlp = spacy.load('en_core_web_sm')
 
+    with open(os.path.join(DATA_DIR, "posts.json"), "r", encoding="utf-8") as posts_file:
+        posts = json.load(posts_file)
+
+    
+
+    # Procesar todos los comentarios en los posts
+    for key, value in keywords.items():
+        keyword_counter = Counter()
+        
+        print(value)
+
+        for post in posts:
+            for comments in post["Comments"]:
+                text_to_analyze = comments["Content"]
+                doc = nlp(text_to_analyze)
+                
+                for token in doc:
+                    if not token.is_stop and not token.is_punct:
+                        lemma = token.lemma_
+                        if lemma in value:
+                            keyword_counter[lemma] += 1
+
+        # Get the 10 most frequent keywords in the post
+        top_keywords = keyword_counter.most_common(10)
+
+        print("The 10 most frequent words are:")
+        for keyword, count in top_keywords:
+            print(f"{keyword}: {count}")
+        
+        # Serialize the results in JSON format
+        json_result = json.dumps(top_keywords, indent=4, ensure_ascii=False)
+        output_file_path = os.path.join(BASE_DIR, f"data/keywords{key}.json")
+        with open(output_file_path, "w", encoding="utf-8") as f: 
+            f.write(json_result)

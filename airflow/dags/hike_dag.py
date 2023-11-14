@@ -5,7 +5,7 @@ import requests
 import random
 import json
 
-from helpers import call_reddit_api
+from helpers import call_reddit_api, natural_language_processing
 
 import airflow
 from airflow.models import Variable
@@ -38,15 +38,22 @@ start = DummyOperator(
     dag=dag
 )
 
-call_reddit_api = PythonOperator(
+call_reddit_api_node = PythonOperator(
     task_id='call_reddit_api',
     dag=dag,
     python_callable=call_reddit_api,
     op_kwargs={
         "hike_name": "Half Dome",
-        "limit": 5,
+        "limit": 2,
         "subreddit_name": "hiking"
     },
+    depends_on_past=False
+)
+
+perform_natural_language_processing= PythonOperator(
+    task_id='perform_natural_language_processing',
+    dag=dag,
+    python_callable=natural_language_processing,
     depends_on_past=False
 )
 
@@ -55,4 +62,4 @@ end = DummyOperator(
     dag=dag
 )
 
-start >> call_reddit_api >> end
+start >> call_reddit_api_node >> perform_natural_language_processing >> end
