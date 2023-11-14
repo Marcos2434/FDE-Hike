@@ -18,7 +18,8 @@ EOF
 "
 fi
 
-docker build -f ./avg_sunlight_by_region/Dockerfile -t avg_sunlight_by_region ./avg_sunlight_by_region
+# Build images
+# docker build -f ./path/to/Dockerfile -t name_of_process ./run_this
 
 # Initialize the database
 # On all operating systems, you need to run database migrations and create the first user account.
