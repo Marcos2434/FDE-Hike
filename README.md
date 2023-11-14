@@ -21,6 +21,8 @@ Graph Database for Similarity: Consider using a graph database to establish rela
 
 ## How to run
 
+Run the Docker daemon, then...
+
 ## Automatic startup
 ### MacOS / Linux 
 ```sh
@@ -41,7 +43,7 @@ You should then be able to run the initial command.
 
 ### Windows
 ```ps1
-.\start.ps1
+./start.ps1
 ```
 
 You might need to adjust the PowerShell execution policy to allow running scripts. You can do this by running:
