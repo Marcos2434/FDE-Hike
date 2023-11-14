@@ -7,44 +7,48 @@ reddit_credentials = praw.Reddit(
     user_agent="hiking-app por u/Asteteh",
 )
 
-def call_redditt_api():
+def call_reddit_api(hike_name, limit, subreddit_name='all'):
+    """Calls reddit api to get the top <limit> posts of a given hike.
 
+    Args:
+        hike_name (string): name of the hike to search for.
+        limit (int): number of posts to return.
+        subreddit_name (str, optional): name of subreddit to look in. Defaults to 'all'.
+    """
+        
+    subreddit = reddit_credentials.subreddit("all")
+    search_results = subreddit.search(hike_name, limit=limit)
 
-    nombre_excursion = "Yosemite"
-    subreddit = reddit.subreddit("all")
-    resultados_busqueda = subreddit.search(nombre_excursion, limit=5)
+    top_posts = []
 
-    publicaciones_principales = []
-
-    for publicacion in resultados_busqueda:
+    for post in search_results:
         publicacion_principal = {
-            "TÃ­tulo": publicacion.title,
-            "Upvotes": publicacion.score,
-            "Comentarios": []
+            "Title": post.title,
+            "Upvotes": post.score,
+            "Comments": []
         }
 
-        publicacion.comments.replace_more(limit=None)
+        post.comments.replace_more(limit=None)
 
-        for comentario in publicacion.comments.list():
-            if hasattr(comentario, 'author'):
+        for comment in post.comments.list():
+            if hasattr(comment, 'author'):
                 datos_comentario = {
-                    "Contenido": comentario.body,
-                    "Upvotes": comentario.score
+                    "Content": comment.body,
+                    "Upvotes": comment.score
                 }
-                publicacion_principal["Comentarios"].append(datos_comentario)
+                publicacion_principal["Comments"].append(datos_comentario)
 
-        publicaciones_principales.append(publicacion_principal)
+        top_posts.append(publicacion_principal)
 
     # Order the main posts by upvotes in descending order
-    publicaciones_principales.sort(key=lambda x: x["Upvotes"], reverse=True)
+    top_posts.sort(key=lambda x: x["Upvotes"], reverse=True)
 
     # Capture the top 5 posts
-    publicaciones = publicaciones_principales[:5]
+    publicaciones = top_posts[:5]
 
     # Serialize the results in JSON format
-    resultado_json = json.dumps(publicaciones, indent=4, ensure_ascii=False)
+    json_result = json.dumps(publicaciones, indent=4, ensure_ascii=False)
 
-    with open("resultados.json", "w", encoding="utf-8") as archivo_json:
-        archivo_json.write(resultado_json)
+    with open("posts.json", "w", encoding="utf-8") as f: f.write(json_result)
 
 
