@@ -52,7 +52,7 @@ AIRFLOW_UID=
 _AIRFLOW_WWW_USER_USERNAME=airflow
 _AIRFLOW_WWW_USER_PASSWORD=airflow
 AIRFLOW_GID=0
-_PIP_ADDITIONAL_REQUIREMENTS=xlsx2csv==0.7.8 faker==8.12.1
+_PIP_ADDITIONAL_REQUIREMENTS=xlsx2csv==0.7.8 faker==8.12.1 praw==7.7.1
 ```
 Make sure to fill in the missing AIRFLOW_UID value with your local user id `id -u`.
 

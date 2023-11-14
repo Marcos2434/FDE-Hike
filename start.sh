@@ -13,7 +13,7 @@ AIRFLOW_UID=$(id -u)
 _AIRFLOW_WWW_USER_USERNAME=airflow
 _AIRFLOW_WWW_USER_PASSWORD=airflow
 AIRFLOW_GID=0
-_PIP_ADDITIONAL_REQUIREMENTS=xlsx2csv==0.7.8 faker==8.12.1
+_PIP_ADDITIONAL_REQUIREMENTS=xlsx2csv==0.7.8 faker==8.12.1 praw==7.7.1
 EOF
 "
 fi
@@ -27,7 +27,7 @@ fi
 docker compose up airflow-init
 
 # Start all services (detached/background mode)
-docker compose up --build --force-recreate -d
+docker compose -f docker-compose.arm64.yaml up --build --force-recreate -d
 
 # Add connections
 # docker compose exec airflow-webserver airflow connections add 'postgres_default' --conn-uri 'postgres://airflow:airflow@postgres:5432/airflow'
