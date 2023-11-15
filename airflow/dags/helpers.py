@@ -3,6 +3,9 @@ import json
 import os
 import csv
 
+import redis
+import random
+
 import spacy
 from collections import Counter
 
@@ -15,6 +18,9 @@ reddit_credentials = praw.Reddit(
     client_secret="-8egIOAFeqweAASt_NRUjVxPke5dyw",
     user_agent="hiking-app por u/Asteteh",
 )
+
+# host is the name of the service runnning in the docker file, in this case just redis
+redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
 
 def call_reddit_api(hike_name, limit, subreddit_name='all'):
     """Calls reddit api to get the top <limit> posts of a given hike.
@@ -31,7 +37,7 @@ def call_reddit_api(hike_name, limit, subreddit_name='all'):
     top_posts = []
 
     for post in search_results:
-        publicacion_principal = {
+        top_post = {
             "Title": post.title,
             "Upvotes": post.score,
             "Comments": []
@@ -41,26 +47,35 @@ def call_reddit_api(hike_name, limit, subreddit_name='all'):
 
         for comment in post.comments.list():
             if hasattr(comment, 'author'):
-                datos_comentario = {
+                comment_details = {
                     "Content": comment.body,
                     "Upvotes": comment.score
                 }
-                publicacion_principal["Comments"].append(datos_comentario)
+                top_post["Comments"].append(comment_details)
 
-        top_posts.append(publicacion_principal)
+        top_posts.append(top_post)
 
     # Order the main posts by upvotes in descending order
     top_posts.sort(key=lambda x: x["Upvotes"], reverse=True)
 
     # Capture the top 5 posts
-    publicaciones = top_posts[:5]
+    posts = top_posts[:5]
 
     # Serialize the results in JSON format
-    json_result = json.dumps(publicaciones, indent=4, ensure_ascii=False)
+    posts_json = json.dumps(posts, indent=4, ensure_ascii=False)
 
     # Save the results in a file
-    with open(os.path.join(DATA_DIR, 'posts.json'), "w", encoding="utf-8") as f:
-        f.write(json_result)
+    # with open(os.path.join(DATA_DIR, 'posts.json'), "w", encoding="utf-8") as f:
+    #     f.write(posts_json)
+    
+  
+    # if posts_json is not None: 
+    #     redis_client.hset(f'hike:{hike_name}', posts_json)
+    
+    # save post info in redis
+    redis_client.hset(f'hike:{hike_name}', 'Hikes', posts_json)
+
+
     
 
 def natural_language_processing():
@@ -76,27 +91,28 @@ def natural_language_processing():
     
     nlp = spacy.load('en_core_web_sm')
 
-    with open(os.path.join(DATA_DIR, "posts.json"), "r", encoding="utf-8") as posts_file:
-        posts = json.load(posts_file)
-
     
-
     # Procesar todos los comentarios en los posts
     for key, value in keywords.items():
         keyword_counter = Counter()
-        
-        print(value)
 
-        for post in posts:
-            for comments in post["Comments"]:
-                text_to_analyze = comments["Content"]
-                doc = nlp(text_to_analyze)
-                
-                for token in doc:
-                    if not token.is_stop and not token.is_punct:
-                        lemma = token.lemma_
-                        if lemma in value:
-                            keyword_counter[lemma] += 1
+        # Loop over hikes
+        for hike_key in redis_client.keys('hike*'):
+            
+            # Loop over the posts in the hike and perform NLP
+            # hike_name = hike_key.split(":")[1]
+            hike_data = redis_client.hgetall(hike_key)
+            posts = json.loads(hike_data["Hikes"])
+            for post in posts:
+                for comment in post["Comments"]:
+                    text_to_analyze = comment["Content"]
+                    doc = nlp(text_to_analyze)
+                    
+                    for token in doc:
+                        if not token.is_stop and not token.is_punct:
+                            lemma = token.lemma_
+                            if lemma in value:
+                                keyword_counter[lemma] += 1
 
         # Get the 10 most frequent keywords in the post
         top_keywords = keyword_counter.most_common(10)
@@ -107,6 +123,6 @@ def natural_language_processing():
         
         # Serialize the results in JSON format
         json_result = json.dumps(top_keywords, indent=4, ensure_ascii=False)
-        output_file_path = os.path.join(BASE_DIR, f"data/keywords{key}.json")
+        output_file_path = os.path.join(BASE_DIR, f"data/{key}.json")
         with open(output_file_path, "w", encoding="utf-8") as f: 
             f.write(json_result)
