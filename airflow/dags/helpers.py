@@ -64,14 +64,6 @@ def call_reddit_api(hike_name, limit, subreddit_name='all'):
     # Serialize the results in JSON format
     posts_json = json.dumps(posts, indent=4, ensure_ascii=False)
 
-    # Save the results in a file
-    # with open(os.path.join(DATA_DIR, 'posts.json'), "w", encoding="utf-8") as f:
-    #     f.write(posts_json)
-    
-  
-    # if posts_json is not None: 
-    #     redis_client.hset(f'hike:{hike_name}', posts_json)
-    
     # save post info in redis
     redis_client.hset(f'hike:{hike_name}', 'Hikes', posts_json)
 
@@ -92,7 +84,7 @@ def natural_language_processing():
     nlp = spacy.load('en_core_web_sm')
 
     
-    # Procesar todos los comentarios en los posts
+    # Peform NLP on all comments in post
     for key, value in keywords.items():
         keyword_counter = Counter()
 
