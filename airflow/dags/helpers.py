@@ -2,12 +2,15 @@ import praw
 import json
 import os
 import csv
+import requests
+import pandas as pd
 
 import redis
 import random
 
 import spacy
 from collections import Counter
+from bs4 import BeautifulSoup
 
 BASE_DIR = '/opt/airflow/'
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -118,3 +121,103 @@ def natural_language_processing():
         output_file_path = os.path.join(BASE_DIR, f"data/{key}.json")
         with open(output_file_path, "w", encoding="utf-8") as f: 
             f.write(json_result)
+
+
+def extract_hikes_data(url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table', {'id': 'tablepress-2'})
+        table_data = []
+        headers = []
+
+        for row in table.find_all('tr'):
+            row_data = {}
+            cells = row.find_all(['td', 'th'])
+
+            if not headers:
+                headers = [cell.get_text(strip=True) for cell in cells]
+            else:
+                for i in range(len(headers)):
+                    row_data[headers[i]] = cells[i].get_text(strip=True)
+                table_data.append(row_data)
+
+        # Convert to JSON
+        json_data = json.dumps(table_data, ensure_ascii=False, indent=2)
+        output_file_path = os.path.join(BASE_DIR, 'data', 'data_hiking.json')
+
+        with open(output_file_path, 'w', encoding='utf-8') as f:
+            f.write(json_data)
+
+        return json_data
+    else:
+        print(f"Error: {response.status_code}")
+
+def categorize_time_hours(time_hours):
+    if '0 – 2' in time_hours or '2 – 4' in time_hours:
+        return 'Short'
+    elif '4 – 6' in time_hours or '6 – 8' in time_hours:
+        return 'Medium'
+    else:
+        return 'Long'
+    
+def categorize_stars(star_rating):
+    if star_rating == '☆':
+        return 'Poor'
+    elif star_rating == '☆☆':
+        return 'Fair'
+    elif star_rating == '☆☆☆':
+        return 'Good'
+    elif star_rating == '☆☆☆☆':
+        return 'Very Good'
+    elif star_rating == '☆☆☆☆☆':
+        return 'Excellent'
+    else:
+        return 'Unknown'
+
+def _insert():
+    df = pd.read_json('data/data_hiking.json')
+    with open("/opt/airflow/dags/inserts.sql", "w") as f:
+        f.write(
+            "DROP TABLE IF EXISTS hikings;\n"
+            "CREATE TABLE IF NOT EXISTS hikings (\n"
+            "    Hike_name VARCHAR(255),\n"
+            "    Ranking VARCHAR(255),\n"
+            "    Difficulty VARCHAR(255),\n"
+            "    Distance_km DECIMAL(10, 2),\n"
+            "    Elevation_gain_m DECIMAL(10, 2),\n"
+            "    Gradient VARCHAR(255),\n"
+            "    Time_hours VARCHAR(255),\n"
+            "    Dogs VARCHAR(10),\n"
+            "    _4x4 VARCHAR(255),\n"
+            "    Season VARCHAR(255),\n"
+            "    Region VARCHAR(255)\n"
+            ");\n"
+        )
+
+        for index, row in df.iterrows():
+            hike_name = row['HIKE NAME']
+            ranking = categorize_stars(row['RANKING'])
+            difficulty = row['DIFFICULTY']
+            distance_km = row['DISTANCE (KM)']
+            elevation_gain_m = row['ELEVATION GAIN (M)']
+            gradient = row['GRADIENT']
+            time_hours = f"'{categorize_time_hours(row['TIME (HOURS)'])}'"
+            dogs = row['DOGS']
+            cars = row['4X4']
+            season = row['SEASON']
+            region = row['REGION']
+
+            elevation_gain_m = elevation_gain_m.replace(',', '.')
+
+            f.write(
+                "INSERT INTO hikings VALUES ("
+                f"'{hike_name}', '{ranking}', '{difficulty}', {distance_km}, {elevation_gain_m}, '{gradient}', {time_hours}, '{dogs}', '{cars}', '{season}', '{region}'"
+                ");\n"
+            )
+
+        f.close()
+
+
