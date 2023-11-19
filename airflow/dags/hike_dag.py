@@ -5,7 +5,7 @@ import requests
 import random
 import json
 
-from helpers import extract_hikes_data, _insert, call_reddit_api, natural_language_processing
+from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,_insert, call_reddit_api, natural_language_processing
 
 import airflow
 from airflow.models import Variable
@@ -48,21 +48,43 @@ extract_hikings = PythonOperator(
     depends_on_past=False
 )
 
-generate_script_hikings = PythonOperator(
-    task_id='generate_insert',
+transform_hikings = PythonOperator(
+    task_id='transform_hikes_data',
+    python_callable=transformation_redis_hikings,
+    op_kwargs={
+        "hike_key": "extract_hiking"
+    },
     dag=dag,
-    python_callable=_insert,
-    trigger_rule='none_failed',
+    depends_on_past=False
 )
 
-load_hikings = PostgresOperator(
-    task_id='insert_inserts',
-    dag=dag,
-    postgres_conn_id='postgres_default',
-    sql='inserts.sql',
-    trigger_rule='all_success',
-    autocommit=True
+add_hikings_to_mongo = PythonOperator(
+    task_id = "add_hikings_to_mongo",
+    dag = dag,
+    python_callable = insert_mongo,
+    op_kwargs={
+        "hike_key": "extract_hiking"
+    },
+    depends_on_past=False
 )
+
+### Dags for Postgres
+
+    # generate_script_hikings = PythonOperator(
+    #     task_id='generate_insert',
+    #     dag=dag,
+    #     python_callable=_insert,
+    #     trigger_rule='none_failed',
+    # )
+
+    # load_hikings = PostgresOperator(
+    #     task_id='insert_inserts',
+    #     dag=dag,
+    #     postgres_conn_id='postgres_default',
+    #     sql='inserts.sql',
+    #     trigger_rule='all_success',
+    #     autocommit=True
+    # )
 
 call_reddit_api_node = PythonOperator(
     task_id='call_reddit_api',
@@ -88,4 +110,4 @@ end = DummyOperator(
     dag=dag
 )
 
-start >> extract_hikings >> generate_script_hikings >> load_hikings >> call_reddit_api_node >> perform_natural_language_processing >> end
+start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> end

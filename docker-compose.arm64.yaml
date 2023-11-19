@@ -93,6 +93,21 @@ services:
       retries: 5
     restart: always
 
+  mongo:
+    image: mongo
+    hostname: mongo7687
+    container_name: mongo
+    platform: linux/arm64
+    environment:
+      MONGO_INITDB_ROOT_USERNAME:
+      MONGO_INITDB_ROOT_PASSWORD:
+    ports:
+        - "27017:27017"
+        - "27018:27018"
+    volumes:
+      - mongo-db-volume:/var/lib/mongo/data
+    restart: always
+
   # neo:
   #     image: neo4j:5.1.0
   #     platform: linux/arm64
@@ -245,3 +260,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  mongo-db-volume:

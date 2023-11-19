@@ -7,6 +7,7 @@ import pandas as pd
 
 import redis
 import random
+import pymongo as py
 
 import spacy
 from collections import Counter
@@ -24,6 +25,13 @@ reddit_credentials = praw.Reddit(
 
 # host is the name of the service runnning in the docker file, in this case just redis
 redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
+
+myclient = py.MongoClient("mongodb://mongo:27017/")
+mongo_db = myclient['hiking_db']
+mongo_collection_hikings = mongo_db['hikings']
+
+
+
 
 def call_reddit_api(hike_name, limit, subreddit_name='all'):
     """Calls reddit api to get the top <limit> posts of a given hike.
@@ -146,12 +154,8 @@ def extract_hikes_data(url):
 
         # Convert to JSON
         json_data = json.dumps(table_data, ensure_ascii=False, indent=2)
-        output_file_path = os.path.join(BASE_DIR, 'data', 'data_hiking.json')
+        redis_client.set('extract_hiking', json_data)
 
-        with open(output_file_path, 'w', encoding='utf-8') as f:
-            f.write(json_data)
-
-        return json_data
     else:
         print(f"Error: {response.status_code}")
 
@@ -162,20 +166,46 @@ def categorize_time_hours(time_hours):
         return 'Medium'
     else:
         return 'Long'
-    
+
 def categorize_stars(star_rating):
-    if star_rating == '☆':
-        return 'Poor'
-    elif star_rating == '☆☆':
-        return 'Fair'
-    elif star_rating == '☆☆☆':
-        return 'Good'
-    elif star_rating == '☆☆☆☆':
-        return 'Very Good'
-    elif star_rating == '☆☆☆☆☆':
+    if '☆☆☆☆☆' in star_rating:
         return 'Excellent'
+    elif '☆☆☆☆' in star_rating:
+        return 'Very Good'
+    elif '☆☆☆' in star_rating:
+        return 'Good'
+    elif '☆☆' in star_rating:
+        return 'Fair'
+    elif '☆' in star_rating:
+        return 'Poor'
     else:
         return 'Unknown'
+
+def transformation_redis_hikings(hike_key):
+
+    data = redis_client.get(hike_key)
+    hike_data_list = json.loads(data)
+
+    for hike_data in hike_data_list:
+        hike_data['TIME (HOURS)'] = categorize_time_hours(hike_data['TIME (HOURS)'])
+        hike_data['RANKING'] = categorize_stars(hike_data['RANKING'])
+        hike_data['ELEVATION GAIN (M)'] = hike_data['ELEVATION GAIN (M)'].replace(',', '.')
+
+    redis_client.set(hike_key, json.dumps(hike_data_list))
+
+def insert_mongo(hike_key):
+    data = redis_client.get(hike_key)
+    hike_data_list = json.loads(data)
+
+    name_collection = 'hikings'
+    if name_collection in mongo_db.list_collection_names():
+        mongo_collection = mongo_db[name_collection]
+        mongo_collection.drop()
+
+    mongo_collection_hikings.insert_many(hike_data_list)
+
+    for document in mongo_collection_hikings.find():
+        print(document)
 
 def _insert():
     df = pd.read_json('data/data_hiking.json')

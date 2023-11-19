@@ -1,34 +1,42 @@
 [
     [
         "trail",
-        4
+        30
+    ],
+    [
+        "mountain",
+        8
+    ],
+    [
+        "valley",
+        8
+    ],
+    [
+        "peak",
+        6
+    ],
+    [
+        "summit",
+        5
     ],
     [
         "ocean",
         4
     ],
     [
-        "valley",
-        3
-    ],
-    [
         "canyon",
         3
     ],
     [
-        "sink",
+        "wildlife",
         2
     ],
     [
-        "mountain",
+        "snow",
         2
-    ],
-    [
-        "glacier",
-        1
     ],
     [
         "wilderness",
-        1
+        2
     ]
 ]
