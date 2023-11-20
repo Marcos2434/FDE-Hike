@@ -5,7 +5,7 @@ import requests
 import random
 import json
 
-from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,_insert, call_reddit_api, natural_language_processing
+from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,extract_data_mongo, call_reddit_api, natural_language_processing,nature_neo4j
 
 import airflow
 from airflow.models import Variable
@@ -68,6 +68,13 @@ add_hikings_to_mongo = PythonOperator(
     depends_on_past=False
 )
 
+extract_data_hikings_to_mongo = PythonOperator(
+    task_id = "extract_data_hikings_to_mongo",
+    dag = dag,
+    python_callable = extract_data_mongo,
+    depends_on_past=False
+)
+
 ### Dags for Postgres
 
     # generate_script_hikings = PythonOperator(
@@ -91,7 +98,7 @@ call_reddit_api_node = PythonOperator(
     dag=dag,
     python_callable=call_reddit_api,
     op_kwargs={
-        "hike_name": "Half Dome",
+        "hike_name": "Teapot Hill",
         "limit": 2,
         "subreddit_name": "hiking"
     },
@@ -105,9 +112,20 @@ perform_natural_language_processing= PythonOperator(
     depends_on_past=False
 )
 
+add_nature_hike = PythonOperator(
+    task_id='add_nature_hike',
+    dag=dag,
+    python_callable=nature_neo4j,
+    op_kwargs={
+        "hike_name": "Teapot Hill"
+    },
+    depends_on_past=False
+)
+
 end = DummyOperator(
     task_id='end', 
     dag=dag
 )
 
-start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> end
+
+start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> extract_data_hikings_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> add_nature_hike >> end

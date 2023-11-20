@@ -8,10 +8,13 @@ import pandas as pd
 import redis
 import random
 import pymongo as py
+from py2neo import Node, Relationship,NodeMatcher
+
 
 import spacy
 from collections import Counter
 from bs4 import BeautifulSoup
+
 
 BASE_DIR = '/opt/airflow/'
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -29,6 +32,14 @@ redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
 myclient = py.MongoClient("mongodb://mongo:27017/")
 mongo_db = myclient['hiking_db']
 mongo_collection_hikings = mongo_db['hikings']
+
+
+
+from py2neo import Graph
+
+graph = Graph("bolt://neo:7687")
+
+neo4j_session = graph.begin()
 
 
 
@@ -121,11 +132,10 @@ def natural_language_processing():
         top_keywords = keyword_counter.most_common(10)
 
         print("The 10 most frequent words are:")
-        for keyword, count in top_keywords:
-            print(f"{keyword}: {count}")
+        top_keywords_dict = [{"word": word, "count": count} for word, count in top_keywords]
         
         # Serialize the results in JSON format
-        json_result = json.dumps(top_keywords, indent=4, ensure_ascii=False)
+        json_result = json.dumps(top_keywords_dict, indent=4, ensure_ascii=False)
         output_file_path = os.path.join(BASE_DIR, f"data/{key}.json")
         with open(output_file_path, "w", encoding="utf-8") as f: 
             f.write(json_result)
@@ -204,8 +214,77 @@ def insert_mongo(hike_key):
 
     mongo_collection_hikings.insert_many(hike_data_list)
 
-    for document in mongo_collection_hikings.find():
-        print(document)
+
+def extract_data_mongo():
+    # Delete all existing nodes and relationships in the Neo4j database
+    graph.delete_all()
+
+    # Recover data from MongoDB
+    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1, 'RANKING': 1, 'DIFFICULTY': 1, 'TIME (HOURS)': 1, 'REGION': 1})
+
+    for hike_data in data:
+        hike_name = hike_data['HIKE NAME']
+        difficulty = hike_data['DIFFICULTY']
+        ranking = hike_data['RANKING']
+        time_hours = hike_data['TIME (HOURS)']
+        region = hike_data['REGION']
+
+        # Create node for HIKE NAME if it does not exist
+        hike_node = Node("Hike", name=hike_name)
+        graph.merge(hike_node, "Hike", "name")
+
+        # Create node for DIFFICULTY if it does not exist
+        difficulty_node = Node("Difficulty", level=difficulty)
+        graph.merge(difficulty_node, "Difficulty", "level")
+
+        # Create relationship between HIKE NAME and DIFFICULTY
+        relation_difficulty = Relationship(hike_node, "HAS_DIFFICULTY", difficulty_node)
+        graph.create(relation_difficulty)
+
+        # Create node for RANKING if it does not exist
+        ranking_node = Node("Ranking", value=ranking)
+        graph.merge(ranking_node, "Ranking", "value")
+
+        # Create relationship between HIKE NAME and RANKING
+        relation_ranking = Relationship(hike_node, "HAS_RANKING", ranking_node)
+        graph.create(relation_ranking)
+
+        # Create node for TIME if it does not exist
+        time_node = Node("Time", hours=time_hours)
+        graph.merge(time_node, "Time", "hours")
+
+        # Create relationship between HIKE NAME and TIME
+        relation_time = Relationship(hike_node, "HAS_TIME", time_node)
+        graph.create(relation_time)
+
+        # Create node for REGION if it does not exist
+        region_node = Node("Region", name=region)
+        graph.merge(region_node, "Region", "name")
+
+        # Create relationship between HIKE NAME and REGION
+        relation_region = Relationship(hike_node, "HAS_REGION", region_node)
+        graph.create(relation_region)
+
+def nature_neo4j(hike_name):
+    json_data = pd.read_json('data/nature.json')
+    selected_elements = json_data.to_dict(orient='records')
+
+    hike_node = Node("Hike", name=hike_name)
+    graph.merge(hike_node, "Hike", "name")
+
+    for element in selected_elements:
+        # Accede a las claves "word" y "count" de cada diccionario
+        word = element["word"]
+
+        # Create or find the Nature node
+        nature_node = Node("Nature", type=word)
+        graph.merge(nature_node, "Nature", "type")
+
+        # Create relationship between Hike and Nature
+        relation = Relationship(hike_node, "HAS_NATURE", nature_node)
+        graph.create(relation)
+
+
 
 def _insert():
     df = pd.read_json('data/data_hiking.json')
