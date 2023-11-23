@@ -8,7 +8,7 @@ import pandas as pd
 import redis
 import random
 import pymongo as py
-from py2neo import Node, Relationship,NodeMatcher
+from py2neo import Node, Relationship, Graph, NodeMatcher
 
 
 import spacy
@@ -29,117 +29,14 @@ reddit_credentials = praw.Reddit(
 # host is the name of the service runnning in the docker file, in this case just redis
 redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
 
+# connection with mongo
 myclient = py.MongoClient("mongodb://mongo:27017/")
 mongo_db = myclient['hiking_db']
 mongo_collection_hikings = mongo_db['hikings']
 
-
-
-from py2neo import Graph
-
+#connection with neo4j
 graph = Graph("bolt://neo:7687")
-
 neo4j_session = graph.begin()
-
-
-
-
-def call_reddit_api(hike_name, limit, subreddit_name='all'):
-    """Calls reddit api to get the top <limit> posts of a given hike.
-
-    Args:
-        hike_name (string): name of the hike to search for.
-        limit (int): number of posts to return.
-        subreddit_name (str, optional): name of subreddit to look in. Defaults to 'all'.
-    """
-        
-    subreddit = reddit_credentials.subreddit("all")
-    search_results = subreddit.search(hike_name, limit=limit)
-
-    top_posts = []
-
-    for post in search_results:
-        top_post = {
-            "Title": post.title,
-            "Upvotes": post.score,
-            "Comments": []
-        }
-
-        post.comments.replace_more(limit=None)
-
-        for comment in post.comments.list():
-            if hasattr(comment, 'author'):
-                comment_details = {
-                    "Content": comment.body,
-                    "Upvotes": comment.score
-                }
-                top_post["Comments"].append(comment_details)
-
-        top_posts.append(top_post)
-
-    # Order the main posts by upvotes in descending order
-    top_posts.sort(key=lambda x: x["Upvotes"], reverse=True)
-
-    # Capture the top 5 posts
-    posts = top_posts[:5]
-
-    # Serialize the results in JSON format
-    posts_json = json.dumps(posts, indent=4, ensure_ascii=False)
-
-    # save post info in redis
-    redis_client.hset(f'hike:{hike_name}', 'Hikes', posts_json)
-
-
-    
-
-def natural_language_processing():
-    
-    # Load the keywords
-    keywords = {}
-    for root, dirs, files in os.walk(KEYWORDS_DIR):
-        for file in files:
-            if file.endswith(".csv"):
-                with open(os.path.join(root, file), "r", encoding="utf-8") as f:
-                    filename = file.split(".")[0]
-                    keywords[filename] = [word.strip() for word in next(csv.reader(f))]
-    
-    nlp = spacy.load('en_core_web_sm')
-
-    
-    # Peform NLP on all comments in post
-    for key, value in keywords.items():
-        keyword_counter = Counter()
-
-        # Loop over hikes
-        for hike_key in redis_client.keys('hike*'):
-            
-            # Loop over the posts in the hike and perform NLP
-            # hike_name = hike_key.split(":")[1]
-            hike_data = redis_client.hgetall(hike_key)
-            posts = json.loads(hike_data["Hikes"])
-            for post in posts:
-                for comment in post["Comments"]:
-                    text_to_analyze = comment["Content"]
-                    doc = nlp(text_to_analyze)
-                    
-                    for token in doc:
-                        if not token.is_stop and not token.is_punct:
-                            lemma = token.lemma_
-                            if lemma in value:
-                                keyword_counter[lemma] += 1
-
-        # Get the 10 most frequent keywords in the post
-        top_keywords = keyword_counter.most_common(10)
-
-        print("The 10 most frequent words are:")
-        top_keywords_dict = [{"word": word, "count": count} for word, count in top_keywords]
-        
-        # Serialize the results in JSON format
-        json_result = json.dumps(top_keywords_dict, indent=4, ensure_ascii=False)
-        output_file_path = os.path.join(BASE_DIR, f"data/{key}.json")
-        with open(output_file_path, "w", encoding="utf-8") as f: 
-            f.write(json_result)
-
 
 def extract_hikes_data(url):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
@@ -169,6 +66,7 @@ def extract_hikes_data(url):
     else:
         print(f"Error: {response.status_code}")
 
+# support function, responsible for transforming the data
 def categorize_time_hours(time_hours):
     if '0 – 2' in time_hours or '2 – 4' in time_hours:
         return 'Short'
@@ -177,6 +75,7 @@ def categorize_time_hours(time_hours):
     else:
         return 'Long'
 
+# support function, responsible for transforming the data
 def categorize_stars(star_rating):
     if '☆☆☆☆☆' in star_rating:
         return 'Excellent'
@@ -215,7 +114,7 @@ def insert_mongo(hike_key):
     mongo_collection_hikings.insert_many(hike_data_list)
 
 
-def extract_data_mongo():
+def insert_data_mongo_in_neo4j():
     # Delete all existing nodes and relationships in the Neo4j database
     graph.delete_all()
 
@@ -265,25 +164,142 @@ def extract_data_mongo():
         relation_region = Relationship(hike_node, "HAS_REGION", region_node)
         graph.create(relation_region)
 
-def nature_neo4j(hike_name):
-    json_data = pd.read_json('data/nature.json')
-    selected_elements = json_data.to_dict(orient='records')
+def call_reddit_api(limit, subreddit_name='all'):
+    """Calls Reddit API to get the top <limit> posts for each hike in the list.
 
-    hike_node = Node("Hike", name=hike_name)
-    graph.merge(hike_node, "Hike", "name")
+    Args:
+        limit (int): Number of posts to return for each hike.
+        subreddit_name (str, optional): Name of subreddit to look in. Defaults to 'all'.
+    """
 
-    for element in selected_elements:
-        # Accede a las claves "word" y "count" de cada diccionario
-        word = element["word"]
+    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1})
+    hike_names = [hike_data['HIKE NAME'] for hike_data in data]
 
-        # Create or find the Nature node
-        nature_node = Node("Nature", type=word)
-        graph.merge(nature_node, "Nature", "type")
+    all_hikes_keywords = {}
 
-        # Create relationship between Hike and Nature
-        relation = Relationship(hike_node, "HAS_NATURE", nature_node)
-        graph.create(relation)
+    for hike_name in hike_names:
+        subreddit = reddit_credentials.subreddit(subreddit_name)
+        search_results = subreddit.search(hike_name, limit=limit)
 
+        top_posts = []
+
+        for post in search_results:
+            top_post = {
+                "word": post.title,
+                "count": post.score,
+            }
+
+            # Additional logic for comments, adjust as needed
+
+            top_posts.append(top_post)
+
+        # Order the main posts by count in descending order
+        top_posts.sort(key=lambda x: x["count"], reverse=True)
+
+        # Capture the top 5 posts
+        posts = top_posts[:5]
+
+        # Append null values to ensure uniform length
+        while len(posts) < 5:
+            posts.append({"word": None, "count": None})
+
+        all_hikes_keywords[hike_name] = posts
+
+    # Serialize the results in JSON format
+    json_data = json.dumps(all_hikes_keywords, indent=4, ensure_ascii=False)
+
+    # Save JSON data to a file (or use it as needed)
+    with open('data/all_hikes_keywords.json', 'w') as json_file:
+        json_file.write(json_data)
+
+    print("JSON file generated successfully.")
+
+def natural_language_processing():
+
+    # Load the keywords
+    keywords = {}
+    for root, dirs, files in os.walk(KEYWORDS_DIR):
+        for file in files:
+            if file.endswith(".csv"):
+                with open(os.path.join(root, file), "r", encoding="utf-8") as f:
+                    filename = file.split(".")[0]
+                    keywords[filename] = [word.strip() for word in next(csv.reader(f))]
+
+    nlp = spacy.load('en_core_web_sm')
+
+    # Dictionary to store results
+    all_hikes_keywords = {}
+
+    # Loop over hikes in Redis
+    for hike_key in redis_client.keys('hike*'):
+        hike_name = hike_key.split(":")[1]
+        hike_data = redis_client.hgetall(hike_key)
+        posts = json.loads(hike_data["Hikes"])
+
+        # Initialize keyword counter for this hike
+        keyword_counter = Counter()
+
+        # Loop over the posts in the hike and perform NLP
+        for post in posts:
+            for comment in post["Comments"]:
+                text_to_analyze = comment["Content"]
+                doc = nlp(text_to_analyze)
+
+                # Loop over keywords in value
+                for value in keywords.values():
+                    for token in doc:
+                        if not token.is_stop and not token.is_punct:
+                            lemma = token.lemma_
+                            if lemma in value:
+                                keyword_counter[lemma] += 1
+
+        # Get the 10 most frequent keywords in the post
+        top_keywords = keyword_counter.most_common(10)
+
+        # Create a list of the top keywords
+        top_keywords_list = [{"word": word, "count": count} for word, count in top_keywords]
+
+        # Add the list to the dictionary
+        all_hikes_keywords[hike_name] = top_keywords_list
+
+    # Serialize the dictionary in JSON format
+    json_result = json.dumps(all_hikes_keywords, indent=4, ensure_ascii=False)
+
+    # Save the results in a single JSON file for all hikes
+    output_file_path = os.path.join(BASE_DIR, "data/all_hikes_keywords.json")
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        f.write(json_result)
+
+
+def nature_neo4j():
+    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1})
+    hike_names = [hike_data['HIKE NAME'] for hike_data in data]
+
+    json_data = pd.read_json('data/all_hikes_keywords.json')
+
+    for hike_name, elements in json_data.items():
+        hike_node = Node("Hike", name=hike_name)
+        graph.merge(hike_node, "Hike", "name")
+
+        for element in elements:
+            # Accede a las claves "word" y "count" de cada diccionario
+            word = element["word"]
+
+            # Verifica si el nodo Nature ya existe
+            nature_node = Node("Nature", type=word)
+            existing_nature_node = graph.nodes.match("Nature", type=word).first()
+
+            if existing_nature_node:
+                nature_node = existing_nature_node
+            else:
+                graph.create(nature_node)
+
+            # Verifica si la relación ya existe
+            existing_relation = graph.match((hike_node, "HAS_NATURE", nature_node)).first()
+
+            if not existing_relation:
+                relation = Relationship(hike_node, "HAS_NATURE", nature_node)
+                graph.create(relation)
 
 
 def _insert():

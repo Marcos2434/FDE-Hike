@@ -5,7 +5,7 @@ import requests
 import random
 import json
 
-from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,extract_data_mongo, call_reddit_api, natural_language_processing,nature_neo4j
+from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,insert_data_mongo_in_neo4j, call_reddit_api, natural_language_processing,nature_neo4j
 
 import airflow
 from airflow.models import Variable
@@ -68,10 +68,10 @@ add_hikings_to_mongo = PythonOperator(
     depends_on_past=False
 )
 
-extract_data_hikings_to_mongo = PythonOperator(
+insert_data_mongo_in_graph = PythonOperator(
     task_id = "extract_data_hikings_to_mongo",
     dag = dag,
-    python_callable = extract_data_mongo,
+    python_callable = insert_data_mongo_in_neo4j,
     depends_on_past=False
 )
 
@@ -93,17 +93,30 @@ extract_data_hikings_to_mongo = PythonOperator(
     #     autocommit=True
     # )
 
+# Task to call Reddit API for each hike_name
 call_reddit_api_node = PythonOperator(
     task_id='call_reddit_api',
     dag=dag,
     python_callable=call_reddit_api,
     op_kwargs={
-        "hike_name": "Teapot Hill",
         "limit": 2,
         "subreddit_name": "hiking"
     },
     depends_on_past=False
 )
+
+# call_reddit_api_node = PythonOperator(
+#     task_id='call_reddit_api',
+#     dag=dag,
+#     python_callable=call_reddit_api,
+#     op_kwargs={
+#         "hike_name": "Teapot Hill",
+#         "limit": 2,
+#         "subreddit_name": "hiking"
+#     },
+#     depends_on_past=False
+# )
+
 
 perform_natural_language_processing= PythonOperator(
     task_id='perform_natural_language_processing',
@@ -128,4 +141,4 @@ end = DummyOperator(
 )
 
 
-start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> extract_data_hikings_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> add_nature_hike >> end
+start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> insert_data_mongo_in_graph >> call_reddit_api_node >> perform_natural_language_processing >> add_nature_hike >> end
