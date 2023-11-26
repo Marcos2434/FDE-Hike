@@ -5,7 +5,7 @@ import requests
 import random
 import json
 
-from helpers import extract_hikes_data, transformation_redis_hikings,insert_mongo,insert_data_mongo_in_neo4j, call_reddit_api, natural_language_processing,nature_neo4j
+from helpers import extract_hikes_data, transformation_redis_hikes,insert_mongo,insert_data_mongo_in_neo4j, call_reddit_api, natural_language_processing, add_topics_neo4j, check_internet_connection, extract_hikes_data_offline
 
 import airflow
 from airflow.models import Variable
@@ -14,6 +14,9 @@ from airflow.operators.python_operator import PythonOperator, BranchPythonOperat
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
 
+
+# Increase for production
+REDDIT_API_POST_LIMIT = 2
 
 default_args_dict = {
     'start_date': airflow.utils.dates.days_ago(0),
@@ -35,61 +38,86 @@ dag = airflow.DAG(
 
 start = DummyOperator(
     task_id='start', 
-    dag=dag
+    dag=dag,
+    trigger_rule='all_success',
 )
 
-extract_hikings = PythonOperator(
-    task_id='extract_hikes_data',
+check_connection_hikes_data = BranchPythonOperator(
+    task_id='check_connection_hikes_data',
+    python_callable=check_internet_connection,
+    op_kwargs={
+        "online_task": "extract_hikes_online",
+        "offline_task": "extract_hikes_offline",
+    },
+    dag=dag,
+    depends_on_past=False,
+    trigger_rule='all_success',
+)
+
+extract_hikes_offline = PythonOperator(
+    task_id='extract_hikes_offline',
+    python_callable=extract_hikes_data_offline,
+    op_kwargs={
+        "url": "https://besthikesbc.ca/hike-database/"
+    },
+    dag=dag,
+    depends_on_past=False,
+    trigger_rule='all_success',
+)
+    
+extract_hikes_online = PythonOperator(
+    task_id='extract_hikes_online',
     python_callable=extract_hikes_data,
     op_kwargs={
         "url": "https://besthikesbc.ca/hike-database/"
     },
     dag=dag,
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='all_success',
 )
 
-transform_hikings = PythonOperator(
+transform_hikes = PythonOperator(
     task_id='transform_hikes_data',
-    python_callable=transformation_redis_hikings,
+    python_callable=transformation_redis_hikes,
     op_kwargs={
         "hike_key": "extract_hiking"
     },
     dag=dag,
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
 
-add_hikings_to_mongo = PythonOperator(
-    task_id = "add_hikings_to_mongo",
+add_hikes_to_mongo = PythonOperator(
+    task_id = "add_hikes_to_mongo",
     dag = dag,
     python_callable = insert_mongo,
-    op_kwargs={
-        "hike_key": "extract_hiking"
-    },
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
 
 insert_data_mongo_in_graph = PythonOperator(
-    task_id = "extract_data_hikings_to_mongo",
+    task_id = "extract_data_hikes_to_mongo",
     dag = dag,
     python_callable = insert_data_mongo_in_neo4j,
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
 
-### Dags for Postgres
+### Legacy: Dags for Postgres
 
-    # generate_script_hikings = PythonOperator(
+    # generate_script_hikes = PythonOperator(
     #     task_id='generate_insert',
     #     dag=dag,
     #     python_callable=_insert,
     #     trigger_rule='none_failed',
     # )
 
-    # load_hikings = PostgresOperator(
+    # load_hikes = PostgresOperator(
     #     task_id='insert_inserts',
     #     dag=dag,
     #     postgres_conn_id='postgres_default',
     #     sql='inserts.sql',
-    #     trigger_rule='all_success',
+    #     trigger_rule='none_failed',
     #     autocommit=True
     # )
 
@@ -99,46 +127,35 @@ call_reddit_api_node = PythonOperator(
     dag=dag,
     python_callable=call_reddit_api,
     op_kwargs={
-        "limit": 2,
+        "limit": REDDIT_API_POST_LIMIT,
         "subreddit_name": "hiking"
     },
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
-
-# call_reddit_api_node = PythonOperator(
-#     task_id='call_reddit_api',
-#     dag=dag,
-#     python_callable=call_reddit_api,
-#     op_kwargs={
-#         "hike_name": "Teapot Hill",
-#         "limit": 2,
-#         "subreddit_name": "hiking"
-#     },
-#     depends_on_past=False
-# )
-
 
 perform_natural_language_processing= PythonOperator(
     task_id='perform_natural_language_processing',
     dag=dag,
     python_callable=natural_language_processing,
-    depends_on_past=False
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
 
-add_nature_hike = PythonOperator(
-    task_id='add_nature_hike',
+add_topics_graph = PythonOperator(
+    task_id='add_topics_graph',
     dag=dag,
-    python_callable=nature_neo4j,
-    op_kwargs={
-        "hike_name": "Teapot Hill"
-    },
-    depends_on_past=False
+    python_callable=add_topics_neo4j,
+    depends_on_past=False,
+    trigger_rule='none_failed',
 )
 
 end = DummyOperator(
     task_id='end', 
-    dag=dag
+    dag=dag,
+    trigger_rule='all_done',
 )
 
 
-start >> extract_hikings >> transform_hikings >> add_hikings_to_mongo >> insert_data_mongo_in_graph >> call_reddit_api_node >> perform_natural_language_processing >> add_nature_hike >> end
+start >> check_connection_hikes_data >> [extract_hikes_online, extract_hikes_offline] >> transform_hikes 
+transform_hikes >> add_hikes_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> insert_data_mongo_in_graph >> add_topics_graph >> end

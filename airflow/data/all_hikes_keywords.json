@@ -1,0 +1,633 @@
+{
+    "Abby Grind": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Aldergrove Regional Park": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [
+            {
+                "word": "trail",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Alouette Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [
+            {
+                "word": "snow",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Alpen Mountain": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 3
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 3
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Anif Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Bagpipe Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "BCMC Trail": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Bear Mountain (Harrison)": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Bear Mountain (Mission)": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Belcarra Bluffs": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Blackcomb Peak & The Spearhead": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": [
+            {
+                "word": "bird",
+                "count": 1
+            }
+        ]
+    },
+    "Blanca Lake & Peak": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 9
+            },
+            {
+                "word": "lake",
+                "count": 7
+            },
+            {
+                "word": "cliff",
+                "count": 3
+            },
+            {
+                "word": "glacier",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 9
+            },
+            {
+                "word": "lake",
+                "count": 7
+            },
+            {
+                "word": "summit",
+                "count": 7
+            },
+            {
+                "word": "trail",
+                "count": 5
+            },
+            {
+                "word": "snow",
+                "count": 2
+            },
+            {
+                "word": "peak",
+                "count": 2
+            },
+            {
+                "word": "glacier",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "snowy",
+                "count": 1
+            }
+        ],
+        "animals": [
+            {
+                "word": "wild",
+                "count": 2
+            }
+        ]
+    },
+    "Borden Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Bowen Lookout & Yew Lake": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 2
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 2
+            },
+            {
+                "word": "foothill",
+                "count": 1
+            },
+            {
+                "word": "trail",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Brandywine Falls": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "waterfall",
+                "count": 2
+            },
+            {
+                "word": "forest",
+                "count": 1
+            },
+            {
+                "word": "pond",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "waterfall",
+                "count": 2
+            },
+            {
+                "word": "trail",
+                "count": 1
+            },
+            {
+                "word": "forest",
+                "count": 1
+            },
+            {
+                "word": "pond",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "mist",
+                "count": 1
+            }
+        ],
+        "animals": []
+    },
+    "Brandywine Meadows": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Brandywine Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Brothers Creek": {
+        "structures": [
+            {
+                "word": "station",
+                "count": 2
+            },
+            {
+                "word": "house",
+                "count": 1
+            }
+        ],
+        "landscapes": [
+            {
+                "word": "canyon",
+                "count": 9
+            },
+            {
+                "word": "desert",
+                "count": 3
+            },
+            {
+                "word": "hill",
+                "count": 1
+            },
+            {
+                "word": "river",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "trail",
+                "count": 11
+            },
+            {
+                "word": "canyon",
+                "count": 9
+            },
+            {
+                "word": "desert",
+                "count": 3
+            },
+            {
+                "word": "snow",
+                "count": 2
+            },
+            {
+                "word": "summit",
+                "count": 2
+            },
+            {
+                "word": "creek",
+                "count": 1
+            },
+            {
+                "word": "river",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "hot",
+                "count": 6
+            },
+            {
+                "word": "dry",
+                "count": 1
+            },
+            {
+                "word": "humid",
+                "count": 1
+            }
+        ],
+        "animals": [
+            {
+                "word": "pride",
+                "count": 4
+            },
+            {
+                "word": "pack",
+                "count": 3
+            },
+            {
+                "word": "school",
+                "count": 1
+            }
+        ]
+    },
+    "Brunswick Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [
+            {
+                "word": "snow",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Buntzen Lake": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Capilano Canyon": {
+        "structures": [
+            {
+                "word": "bridge",
+                "count": 3
+            }
+        ],
+        "landscapes": [
+            {
+                "word": "canyon",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "trail",
+                "count": 1
+            },
+            {
+                "word": "canyon",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": [
+            {
+                "word": "pack",
+                "count": 1
+            }
+        ]
+    },
+    "Cartmell Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Cayoosh Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Chadsey Lake": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Cloudburst Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Coliseum Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Coquihalla Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Coquitlam Lake Viewpoint": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Cougar Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Crown Mountain": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "valley",
+                "count": 2
+            },
+            {
+                "word": "mountain",
+                "count": 2
+            },
+            {
+                "word": "hill",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "valley",
+                "count": 2
+            },
+            {
+                "word": "mountain",
+                "count": 2
+            },
+            {
+                "word": "trail",
+                "count": 2
+            },
+            {
+                "word": "peak",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
+    "Cypress Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Dam Mountain & Thunderbird Ridge": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 5
+            },
+            {
+                "word": "ridge",
+                "count": 4
+            },
+            {
+                "word": "river",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 5
+            },
+            {
+                "word": "ridge",
+                "count": 4
+            },
+            {
+                "word": "trail",
+                "count": 2
+            },
+            {
+                "word": "snow",
+                "count": 1
+            },
+            {
+                "word": "river",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "tornado",
+                "count": 1
+            }
+        ],
+        "animals": [
+            {
+                "word": "pack",
+                "count": 1
+            }
+        ]
+    },
+    "De Pencier Bluffs": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "DeBeck’s Hill": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Decker Mountain": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Deeks Lake": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Del Campo Peak": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Dewdney Grind": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Diez Vistas": {
+        "structures": [],
+        "landscapes": [],
+        "nature": [],
+        "weather": [],
+        "animals": []
+    },
+    "Dog Mountain": {
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 4
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 4
+            },
+            {
+                "word": "trail",
+                "count": 3
+            },
+            {
+                "word": "peak",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "rainy",
+                "count": 2
+            }
+        ],
+        "animals": []
+    }
+}

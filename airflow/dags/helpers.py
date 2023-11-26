@@ -14,6 +14,8 @@ from py2neo import Node, Relationship, Graph, NodeMatcher
 import spacy
 from collections import Counter
 from bs4 import BeautifulSoup
+from transformers import pipeline
+
 
 
 BASE_DIR = '/opt/airflow/'
@@ -32,7 +34,7 @@ redis_client = redis.StrictRedis(host='redis', port=6379, decode_responses=True)
 # connection with mongo
 myclient = py.MongoClient("mongodb://mongo:27017/")
 mongo_db = myclient['hiking_db']
-mongo_collection_hikings = mongo_db['hikings']
+mongo_collection_hikes = mongo_db['hikes']
 
 #connection with neo4j
 graph = Graph("bolt://neo:7687")
@@ -61,16 +63,24 @@ def extract_hikes_data(url):
 
         # Convert to JSON
         json_data = json.dumps(table_data, ensure_ascii=False, indent=2)
-        redis_client.set('extract_hiking', json_data)
+        
+        # removed redis for ingestion
+        # redis_client.set('extract_hiking', json_data)
+        
+        
+        # save only 5 first hikes
+        json_data = json.dumps(table_data[:40], ensure_ascii=False, indent=2)
+        with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'w') as json_file:
+            json_file.write(json_data)
 
     else:
         print(f"Error: {response.status_code}")
 
 # support function, responsible for transforming the data
 def categorize_time_hours(time_hours):
-    if '0 – 2' in time_hours or '2 – 4' in time_hours:
+    if '0 - 2' in time_hours or '2 - 4' in time_hours:
         return 'Short'
-    elif '4 – 6' in time_hours or '6 – 8' in time_hours:
+    elif '4 - 6' in time_hours or '6 - 8' in time_hours:
         return 'Medium'
     else:
         return 'Long'
@@ -90,7 +100,7 @@ def categorize_stars(star_rating):
     else:
         return 'Unknown'
 
-def transformation_redis_hikings(hike_key):
+def transformation_redis_hikes(hike_key):
 
     data = redis_client.get(hike_key)
     hike_data_list = json.loads(data)
@@ -102,24 +112,36 @@ def transformation_redis_hikings(hike_key):
 
     redis_client.set(hike_key, json.dumps(hike_data_list))
 
-def insert_mongo(hike_key):
-    data = redis_client.get(hike_key)
-    hike_data_list = json.loads(data)
-
-    name_collection = 'hikings'
+def insert_mongo():
+    with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'r') as json_file:
+        hike_data_list = json.load(json_file)
+    
+    name_collection = 'hikes'
     if name_collection in mongo_db.list_collection_names():
         mongo_collection = mongo_db[name_collection]
         mongo_collection.drop()
 
-    mongo_collection_hikings.insert_many(hike_data_list)
+    mongo_collection_hikes.insert_many(hike_data_list)
 
+def check_internet_connection(**kwargs):
+    try:
+        requests.get("http://www.google.com", timeout=5)
+        return kwargs['online_task']
+    except requests.ConnectionError:
+        return kwargs['offline_task']
+
+def extract_hikes_data_offline():
+    pass
+    # with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'r') as json_file:
+    #     data = json.load(json_file)
+    #     redis_client.set('extract_hiking', json.dumps(data))
 
 def insert_data_mongo_in_neo4j():
     # Delete all existing nodes and relationships in the Neo4j database
     graph.delete_all()
 
     # Recover data from MongoDB
-    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1, 'RANKING': 1, 'DIFFICULTY': 1, 'TIME (HOURS)': 1, 'REGION': 1})
+    data = mongo_collection_hikes.find({}, {'_id': 0, 'HIKE NAME': 1, 'RANKING': 1, 'DIFFICULTY': 1, 'TIME (HOURS)': 1, 'REGION': 1})
 
     for hike_data in data:
         hike_name = hike_data['HIKE NAME']
@@ -172,11 +194,12 @@ def call_reddit_api(limit, subreddit_name='all'):
         subreddit_name (str, optional): Name of subreddit to look in. Defaults to 'all'.
     """
 
-    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1})
+    data = mongo_collection_hikes.find({}, {'_id': 0, 'HIKE NAME': 1})
     hike_names = [hike_data['HIKE NAME'] for hike_data in data]
 
-    all_hikes_keywords = {}
-
+    
+    # Save title, content, comments, upvotes and downvotes for each hike posts
+    all_hikes_posts = {}
     for hike_name in hike_names:
         subreddit = reddit_credentials.subreddit(subreddit_name)
         search_results = subreddit.search(hike_name, limit=limit)
@@ -185,129 +208,221 @@ def call_reddit_api(limit, subreddit_name='all'):
 
         for post in search_results:
             top_post = {
-                "word": post.title,
-                "count": post.score,
+                "title": post.title,
+                "content": post.selftext,
+                "upvotes": post.ups,
+                "downvotes": post.downs,
+                "comments": []
             }
 
-            # Additional logic for comments, adjust as needed
+            # limit to first 10 comments
+            
+            for comment in post.comments:
+                top_post["comments"].append({
+                    "Content": comment.body,
+                    "Upvotes": comment.ups,
+                    "Downvotes": comment.downs
+                })
 
             top_posts.append(top_post)
 
-        # Order the main posts by count in descending order
-        top_posts.sort(key=lambda x: x["count"], reverse=True)
+        # Order the main posts by upvotes in descending order
+        top_posts.sort(key=lambda x: x["upvotes"], reverse=True)
 
         # Capture the top 5 posts
         posts = top_posts[:5]
+        
+        all_hikes_posts[hike_name] = posts
+    
 
-        # Append null values to ensure uniform length
-        while len(posts) < 5:
-            posts.append({"word": None, "count": None})
-
-        all_hikes_keywords[hike_name] = posts
-
-    # Serialize the results in JSON format
-    json_data = json.dumps(all_hikes_keywords, indent=4, ensure_ascii=False)
-
-    # Save JSON data to a file (or use it as needed)
-    with open('data/all_hikes_keywords.json', 'w') as json_file:
+    json_data = json.dumps(all_hikes_posts, indent=4, ensure_ascii=False)
+    with open(os.path.join(DATA_DIR, 'all_hikes_posts.json'), 'w') as json_file:
         json_file.write(json_data)
 
-    print("JSON file generated successfully.")
 
 def natural_language_processing():
-
-    # Load the keywords
-    keywords = {}
+    # Load the keywords from csv files in the keywords directory
+    topics = {}
     for root, dirs, files in os.walk(KEYWORDS_DIR):
         for file in files:
             if file.endswith(".csv"):
                 with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                     filename = file.split(".")[0]
-                    keywords[filename] = [word.strip() for word in next(csv.reader(f))]
+                    topics[filename] = [word.strip() for word in next(csv.reader(f))]
 
     nlp = spacy.load('en_core_web_sm')
 
     # Dictionary to store results
     all_hikes_keywords = {}
+    
+    # Load Reddit info
+    with open(os.path.join(DATA_DIR, 'all_hikes_posts.json'), 'r') as json_file:
+        all_hikes_posts = json.load(json_file)
 
-    # Loop over hikes in Redis
-    for hike_key in redis_client.keys('hike*'):
-        hike_name = hike_key.split(":")[1]
-        hike_data = redis_client.hgetall(hike_key)
-        posts = json.loads(hike_data["Hikes"])
+    # Create dictionary keys
+    for hike_name, _ in all_hikes_posts.items(): 
+        all_hikes_keywords[hike_name] = {}
+    
+    
+    # Download the BERT model using transformers
+    bert_model = "nlptown/bert-base-multilingual-uncased-sentiment"
+    nlp_sentiment = pipeline('sentiment-analysis', model=bert_model)
+    
+    topic_sentiment_list = {}
+    # Perform NLP and sentiment analysis for each hike
+    for hike_name, posts in all_hikes_posts.items():
+        topic_sentiment_list[hike_name] = {}
+        for topic_name, keyword_list in topics.items():
+            keyword_counter = Counter()
+            sentiment_counter = {}
+            
+            total_sentiment_of_topic = 0
+            number_of_posts = len(posts)
+            
+            topic_comment_sentiment = {
+                "hike_name": hike_name,
+                "topic_name": topic_name,
+            }
+            
+            # Count keywords in each post
+            for post in posts:
 
-        # Initialize keyword counter for this hike
-        keyword_counter = Counter()
+                # from content
+                doc = nlp(post["content"])
 
-        # Loop over the posts in the hike and perform NLP
-        for post in posts:
-            for comment in post["Comments"]:
-                text_to_analyze = comment["Content"]
-                doc = nlp(text_to_analyze)
-
-                # Loop over keywords in value
-                for value in keywords.values():
+                for token in doc:
+                    if not token.is_stop and not token.is_punct:
+                        lemma = token.lemma_
+                        if lemma in keyword_list:
+                            keyword_counter[lemma] += 1
+                            
+                # content sentiment
+                if post["content"]:
+                    sentiment = nlp_sentiment(post["content"])[0]
+                    total_sentiment_of_topic += sentiment['score']
+                else:
+                    number_of_posts -= 1 # if no content, don't count it
+                
+                    
+                
+                # from comments
+                for comment in post["comments"]:
+                    # nlp for keywords
+                    doc = nlp(comment["Content"])
                     for token in doc:
                         if not token.is_stop and not token.is_punct:
                             lemma = token.lemma_
-                            if lemma in value:
+                            if lemma in keyword_list:
                                 keyword_counter[lemma] += 1
+                                
+                                # sentiment analysis for comment
+                                comment_sentiment = nlp_sentiment(comment["Content"])[0]
+                                
+                                try:
+                                    sentiment_counter[lemma]['positive_sentiment'] += 1
+                                except KeyError:
+                                    sentiment_counter[lemma] = {
+                                        "positive_sentiment": 0,
+                                        "negative_sentiment": 0,
+                                        "neutral_sentiment": 0
+                                    }
+                                
+                                if comment_sentiment['score'] > 0.25: sentiment_counter[lemma]['positive_sentiment'] += 1
+                                elif comment_sentiment['score'] < 0.25: sentiment_counter[lemma]['negative_sentiment'] += 1
+                                else: sentiment_counter[lemma]['neutral_sentiment'] += 1
+                                
 
-        # Get the 10 most frequent keywords in the post
-        top_keywords = keyword_counter.most_common(10)
+                    
+            overall_content_sentiment_for_topic = total_sentiment_of_topic / number_of_posts if number_of_posts > 0 else 0
+            print(overall_content_sentiment_for_topic)
+            topic_sentiment_list[hike_name][topic_name] = {
+                "overall_content_sentiment_for_topic":
+                        'positive_sentiment' if overall_content_sentiment_for_topic > 0.25 
+                        else 'negative_sentiment' if overall_content_sentiment_for_topic < -0.25 
+                        else 'neutral_sentiment'
+            }
 
-        # Create a list of the top keywords
-        top_keywords_list = [{"word": word, "count": count} for word, count in top_keywords]
 
-        # Add the list to the dictionary
-        all_hikes_keywords[hike_name] = top_keywords_list
+            # Get the 10 most frequent keywords in all posts
+            top_keywords = keyword_counter.most_common(10)
+
+            
+            # Create a list of the top keywords
+            top_keywords_and_sentiment_list = [{
+                "word": word, 
+                "count": count,
+            } for word, count in top_keywords]
+            
+            # for word, count in top_keywords:
+            #     print(word)
+            
+            
+            comment_sentiment_list = [sentiment_counter[word] for word, _ in top_keywords if word in sentiment_counter.keys()]
+
+            
+            # Add the list to the dictionary
+            all_hikes_keywords[hike_name][topic_name] = top_keywords_and_sentiment_list
+    
 
     # Serialize the dictionary in JSON format
     json_result = json.dumps(all_hikes_keywords, indent=4, ensure_ascii=False)
 
     # Save the results in a single JSON file for all hikes
-    output_file_path = os.path.join(BASE_DIR, "data/all_hikes_keywords.json")
+    output_file_path = os.path.join(DATA_DIR, "all_hikes_keywords.json")
     with open(output_file_path, "w", encoding="utf-8") as f:
         f.write(json_result)
+        
+    comment_sentiment_list_json = json.dumps(comment_sentiment_list, indent=4, ensure_ascii=False)
+    output_file_path = os.path.join(DATA_DIR, "comment_sentiment_list.json")
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        f.write(comment_sentiment_list_json)
+        
+    topic_sentiment_list_json = json.dumps(topic_sentiment_list, indent=4, ensure_ascii=False)
+    output_file_path = os.path.join(DATA_DIR, "topic_sentiment_list.json")
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        f.write(topic_sentiment_list_json)
+    
 
 
-def nature_neo4j():
-    data = mongo_collection_hikings.find({}, {'_id': 0, 'HIKE NAME': 1})
-    hike_names = [hike_data['HIKE NAME'] for hike_data in data]
+# def determine_popularity():
+#     with open(os.path.join(DATA_DIR, 'all_hikes_posts.json'), 'r') as json_file:
+#         all_hikes_posts = json.load(json_file)
+    
+#     for post in all_hikes_posts:
+    
 
-    json_data = pd.read_json('data/all_hikes_keywords.json')
-
-    for hike_name, elements in json_data.items():
+def add_topics_neo4j():
+    """
+    Loops over all hikes and adds, via the NLP computed data, the topics to the neo4j database, creating nodes and relationships.
+    Where one hike will have connecting nodes in such a way that if you query a hike for "nature" you will get all the nature keywords.
+    """
+    
+    with open(os.path.join(DATA_DIR, 'all_hikes_keywords.json'), 'r') as json_file:
+        all_hikes_keywords = json.load(json_file)
+        
+    with open(os.path.join(DATA_DIR, 'topic_sentiment_list.json'), 'r') as json_file:
+        topic_sentiment_list = json.load(json_file)
+    
+    for hike_name, topics in all_hikes_keywords.items():
         hike_node = Node("Hike", name=hike_name)
         graph.merge(hike_node, "Hike", "name")
 
-        for element in elements:
-            # Accede a las claves "word" y "count" de cada diccionario
-            word = element["word"]
+        for topic_name, keywords in topics.items():
+            for keyword in keywords:
+                keyword_node = Node("Keyword", name=keyword['word'], count=keyword['count'], content_sentiment=topic_sentiment_list[hike_name][topic_name]['overall_content_sentiment_for_topic'])
+                
+                graph.merge(keyword_node, "Keyword", "name")
 
-            # Verifica si el nodo Nature ya existe
-            nature_node = Node("Nature", type=word)
-            existing_nature_node = graph.nodes.match("Nature", type=word).first()
-
-            if existing_nature_node:
-                nature_node = existing_nature_node
-            else:
-                graph.create(nature_node)
-
-            # Verifica si la relación ya existe
-            existing_relation = graph.match((hike_node, "HAS_NATURE", nature_node)).first()
-
-            if not existing_relation:
-                relation = Relationship(hike_node, "HAS_NATURE", nature_node)
-                graph.create(relation)
-
-
+                relation_keyword = Relationship(hike_node, f'{topic_name}', keyword_node)
+                graph.create(relation_keyword)
+    
+# legacy: postgres
 def _insert():
     df = pd.read_json('data/data_hiking.json')
     with open("/opt/airflow/dags/inserts.sql", "w") as f:
         f.write(
-            "DROP TABLE IF EXISTS hikings;\n"
-            "CREATE TABLE IF NOT EXISTS hikings (\n"
+            "DROP TABLE IF EXISTS hikes;\n"
+            "CREATE TABLE IF NOT EXISTS hikes (\n"
             "    Hike_name VARCHAR(255),\n"
             "    Ranking VARCHAR(255),\n"
             "    Difficulty VARCHAR(255),\n"
@@ -338,7 +453,7 @@ def _insert():
             elevation_gain_m = elevation_gain_m.replace(',', '.')
 
             f.write(
-                "INSERT INTO hikings VALUES ("
+                "INSERT INTO hikes VALUES ("
                 f"'{hike_name}', '{ranking}', '{difficulty}', {distance_km}, {elevation_gain_m}, '{gradient}', {time_hours}, '{dogs}', '{cars}', '{season}', '{region}'"
                 ");\n"
             )

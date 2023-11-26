@@ -64,6 +64,7 @@ x-airflow-common: &airflow-common
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/data:/opt/airflow/data
+    - ./airflow/offline_data:/opt/airflow/offline_data
     - ./airflow/keywords:/opt/airflow/keywords
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
