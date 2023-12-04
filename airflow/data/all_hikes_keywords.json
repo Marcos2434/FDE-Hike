@@ -1,5 +1,6 @@
 {
     "Abby Grind": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -7,18 +8,64 @@
         "animals": []
     },
     "Aldergrove Regional Park": {
-        "structures": [],
-        "landscapes": [],
-        "nature": [
+        "danger": [
             {
-                "word": "trail",
+                "word": "ice",
                 "count": 1
             }
         ],
-        "weather": [],
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 1
+            },
+            {
+                "word": "hill",
+                "count": 1
+            },
+            {
+                "word": "forest",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "trail",
+                "count": 2
+            },
+            {
+                "word": "snow",
+                "count": 2
+            },
+            {
+                "word": "mountain",
+                "count": 1
+            },
+            {
+                "word": "forest",
+                "count": 1
+            }
+        ],
+        "weather": [
+            {
+                "word": "warm",
+                "count": 1
+            }
+        ],
         "animals": []
     },
     "Alouette Mountain": {
+        "danger": [
+            {
+                "word": "ice",
+                "count": 2
+            },
+            {
+                "word": "avalanche",
+                "count": 1
+            }
+        ],
         "structures": [],
         "landscapes": [],
         "nature": [
@@ -31,6 +78,7 @@
         "animals": []
     },
     "Alpen Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [
             {
@@ -48,6 +96,7 @@
         "animals": []
     },
     "Anif Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -55,6 +104,7 @@
         "animals": []
     },
     "Bagpipe Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -62,6 +112,7 @@
         "animals": []
     },
     "BCMC Trail": {
+        "danger": [],
         "structures": [],
         "landscapes": [
             {
@@ -79,6 +130,7 @@
         "animals": []
     },
     "Bear Mountain (Harrison)": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -86,6 +138,7 @@
         "animals": []
     },
     "Bear Mountain (Mission)": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -93,6 +146,7 @@
         "animals": []
     },
     "Belcarra Bluffs": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -100,6 +154,7 @@
         "animals": []
     },
     "Blackcomb Peak & The Spearhead": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -112,6 +167,36 @@
         ]
     },
     "Blanca Lake & Peak": {
+        "danger": [
+            {
+                "word": "risk",
+                "count": 6
+            },
+            {
+                "word": "dangerous",
+                "count": 2
+            },
+            {
+                "word": "ice",
+                "count": 1
+            },
+            {
+                "word": "hypothermia",
+                "count": 1
+            },
+            {
+                "word": "exposed",
+                "count": 1
+            },
+            {
+                "word": "danger",
+                "count": 1
+            },
+            {
+                "word": "hate",
+                "count": 1
+            }
+        ],
         "structures": [],
         "landscapes": [
             {
@@ -175,6 +260,7 @@
         ]
     },
     "Borden Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -182,31 +268,20 @@
         "animals": []
     },
     "Bowen Lookout & Yew Lake": {
+        "danger": [],
         "structures": [],
-        "landscapes": [
-            {
-                "word": "mountain",
-                "count": 2
-            }
-        ],
+        "landscapes": [],
         "nature": [
             {
-                "word": "mountain",
-                "count": 2
-            },
-            {
-                "word": "foothill",
-                "count": 1
-            },
-            {
                 "word": "trail",
-                "count": 1
+                "count": 2
             }
         ],
         "weather": [],
         "animals": []
     },
     "Brandywine Falls": {
+        "danger": [],
         "structures": [],
         "landscapes": [
             {
@@ -249,6 +324,7 @@
         "animals": []
     },
     "Brandywine Meadows": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -256,6 +332,7 @@
         "animals": []
     },
     "Brandywine Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -263,6 +340,36 @@
         "animals": []
     },
     "Brothers Creek": {
+        "danger": [
+            {
+                "word": "dehydration",
+                "count": 2
+            },
+            {
+                "word": "disaster",
+                "count": 1
+            },
+            {
+                "word": "death",
+                "count": 1
+            },
+            {
+                "word": "emergency",
+                "count": 1
+            },
+            {
+                "word": "dangerous",
+                "count": 1
+            },
+            {
+                "word": "danger",
+                "count": 1
+            },
+            {
+                "word": "crisis",
+                "count": 1
+            }
+        ],
         "structures": [
             {
                 "word": "station",
@@ -351,6 +458,7 @@
         ]
     },
     "Brunswick Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [
@@ -363,6 +471,7 @@
         "animals": []
     },
     "Buntzen Lake": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -370,6 +479,12 @@
         "animals": []
     },
     "Capilano Canyon": {
+        "danger": [
+            {
+                "word": "pandemic",
+                "count": 1
+            }
+        ],
         "structures": [
             {
                 "word": "bridge",
@@ -401,6 +516,7 @@
         ]
     },
     "Cartmell Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -408,6 +524,7 @@
         "animals": []
     },
     "Cayoosh Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -415,6 +532,7 @@
         "animals": []
     },
     "Chadsey Lake": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -422,6 +540,7 @@
         "animals": []
     },
     "Cloudburst Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -429,6 +548,7 @@
         "animals": []
     },
     "Coliseum Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -436,6 +556,7 @@
         "animals": []
     },
     "Coquihalla Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -443,6 +564,7 @@
         "animals": []
     },
     "Coquitlam Lake Viewpoint": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -450,6 +572,7 @@
         "animals": []
     },
     "Cougar Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -457,6 +580,12 @@
         "animals": []
     },
     "Crown Mountain": {
+        "danger": [
+            {
+                "word": "avalanche",
+                "count": 1
+            }
+        ],
         "structures": [],
         "landscapes": [
             {
@@ -494,6 +623,7 @@
         "animals": []
     },
     "Cypress Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -501,6 +631,12 @@
         "animals": []
     },
     "Dam Mountain & Thunderbird Ridge": {
+        "danger": [
+            {
+                "word": "tornado",
+                "count": 1
+            }
+        ],
         "structures": [],
         "landscapes": [
             {
@@ -552,6 +688,7 @@
         ]
     },
     "De Pencier Bluffs": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -559,6 +696,7 @@
         "animals": []
     },
     "DeBeck’s Hill": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -566,6 +704,7 @@
         "animals": []
     },
     "Decker Mountain": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -573,6 +712,7 @@
         "animals": []
     },
     "Deeks Lake": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -580,6 +720,7 @@
         "animals": []
     },
     "Del Campo Peak": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -587,6 +728,7 @@
         "animals": []
     },
     "Dewdney Grind": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -594,6 +736,7 @@
         "animals": []
     },
     "Diez Vistas": {
+        "danger": [],
         "structures": [],
         "landscapes": [],
         "nature": [],
@@ -601,6 +744,12 @@
         "animals": []
     },
     "Dog Mountain": {
+        "danger": [
+            {
+                "word": "wildfire",
+                "count": 1
+            }
+        ],
         "structures": [],
         "landscapes": [
             {

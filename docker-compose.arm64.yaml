@@ -77,6 +77,42 @@ x-airflow-common: &airflow-common
       condition: service_healthy
 
 services:
+
+  # flask-app:
+  #   build:
+  #     context: ./webapp
+  #   ports:
+  #     - "5001:5000"
+  #   depends_on:
+  #     - neo
+  #     - mongo
+  #     - redis
+  #   restart: always
+
+  notebook:
+    build: notebook/
+    ports:
+      - 8888:8888
+    volumes:
+       - ./:/home/jovyan/work/data
+    environment:
+      - GRANT_SUDO=yesd
+    
+  neo:
+    image: neo4j:5.1.0
+    platform: linux/arm64
+    hostname: neo
+    container_name: neo
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_server.bolt.advertised_address=neo:7687
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-db-volume:/var/lib/neo4j/data
+    restart: always
+
   postgres:
     image: postgres:13
     platform: linux/arm64
@@ -108,21 +144,6 @@ services:
     volumes:
       - mongo-db-volume:/var/lib/mongo/data
     restart: always
-
-  neo:
-      image: neo4j:5.1.0
-      platform: linux/arm64
-      hostname: neo
-      container_name: neo
-      environment:
-        - NEO4J_AUTH=none
-        - NEO4J_server.bolt.advertised_address=neo:7687
-      ports:
-          - "7474:7474"
-          - "7687:7687"
-      volumes:
-        - neo4j-db-volume:/var/lib/neo4j/data
-      restart: always
 
   # neo-dash:
   #   image: nielsdejong/neodash:2.3.5
@@ -258,7 +279,7 @@ services:
       timeout: 10s
       retries: 5
     restart: always
-
+  
 volumes:
   postgres-db-volume:
   mongo-db-volume:

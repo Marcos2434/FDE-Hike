@@ -5,7 +5,14 @@ import requests
 import random
 import json
 
-from helpers import extract_hikes_data, transformation_redis_hikes,insert_mongo,insert_data_mongo_in_neo4j, call_reddit_api, natural_language_processing, add_topics_neo4j, check_internet_connection, extract_hikes_data_offline
+from helpers import (
+    extract_hikes_data, transformation_redis_hikes, 
+    insert_mongo,insert_data_mongo_in_neo4j, 
+    call_reddit_api, natural_language_processing, 
+    add_topics_neo4j, check_internet_connection, 
+    extract_hikes_data_offline, offline_reddit_info,
+    aggregate_topics_neo4j
+)
 
 import airflow
 from airflow.models import Variable
@@ -16,7 +23,7 @@ from airflow.operators.postgres_operator import PostgresOperator
 
 
 # Increase for production
-REDDIT_API_POST_LIMIT = 2
+REDDIT_API_POST_LIMIT = 4
 
 default_args_dict = {
     'start_date': airflow.utils.dates.days_ago(0),
@@ -121,7 +128,27 @@ insert_data_mongo_in_graph = PythonOperator(
     #     autocommit=True
     # )
 
-# Task to call Reddit API for each hike_name
+check_connection_reddit_data = BranchPythonOperator(
+    task_id='check_connection_reddit_data',
+    python_callable=check_internet_connection,
+    op_kwargs={
+        "online_task": "call_reddit_api",
+        "offline_task": "reddit_info_offline",
+    },
+    dag=dag,
+    depends_on_past=False,
+    trigger_rule='all_success',
+)
+
+reddit_info_offline = PythonOperator(
+    task_id='reddit_info_offline',
+    dag=dag,
+    python_callable=offline_reddit_info,
+    depends_on_past=False,
+    trigger_rule='none_failed',
+)
+
+# Task to call Reddit API for each hike
 call_reddit_api_node = PythonOperator(
     task_id='call_reddit_api',
     dag=dag,
@@ -150,6 +177,14 @@ add_topics_graph = PythonOperator(
     trigger_rule='none_failed',
 )
 
+aggregate_topics = PythonOperator(
+    task_id='aggregate_topics',
+    dag=dag,
+    python_callable=aggregate_topics_neo4j,
+    depends_on_past=False,
+    trigger_rule='none_failed',
+)
+
 end = DummyOperator(
     task_id='end', 
     dag=dag,
@@ -158,4 +193,5 @@ end = DummyOperator(
 
 
 start >> check_connection_hikes_data >> [extract_hikes_online, extract_hikes_offline] >> transform_hikes 
-transform_hikes >> add_hikes_to_mongo >> call_reddit_api_node >> perform_natural_language_processing >> insert_data_mongo_in_graph >> add_topics_graph >> end
+transform_hikes >> add_hikes_to_mongo >> check_connection_reddit_data >> [call_reddit_api_node, reddit_info_offline] >> perform_natural_language_processing 
+perform_natural_language_processing >> insert_data_mongo_in_graph >> add_topics_graph >> aggregate_topics >> end

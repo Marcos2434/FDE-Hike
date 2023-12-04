@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo4j Query App</title>
+
+
+    <script src="https://unpkg.com/neovis.js@2.0.2"></script>
+    <script src="{{ url_for('serve_js', filename='graph_visualization.js') }}"></script>
+
+
+    <style type="text/css">
+
+        html, body {
+            font: 16pt arial;
+        }
+
+        #viz {
+            width: 900px;
+            height: 700px;
+            border: 1px solid lightgray;
+            font: 22pt arial;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Neo4j Query App</h1>
+    <form action="/run_query" method="post">
+        <label for="query">Enter Neo4j Query:</label>
+        <textarea name="query" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="Run Query">
+    </form>
+
+    <div id="viz"></div>
+</body>
+</html>
