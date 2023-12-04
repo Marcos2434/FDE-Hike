@@ -32,6 +32,8 @@ The production graph database is structured in such a way that each hike is its 
 
 
 # Queries to run
+N.b: Queries were run with REDDIT_API_POST_LIMIT = 2, for the sake of simplicity and transmitting the idea behind the queries, as well as clear graphical representation. Feel free to tune REDDIT_API_POST_LIMIT. You can also add your own keyword files to the keywords folder and they will be automatically added to the graph database. Name it however you wish and that'll be the name of the relationship. The keywords file must be a .csv file with comma-separated keywords.
+
 1. Retrieve all Connected Nodes for a Hike:
 
 ```cypher
@@ -208,3 +210,5 @@ docker-compose up -d --no-deps --build flask-app
 
 talk about nlp import bert model challenges
 talk about REDDIT_API_POST_LIMIT
+
+BERT models have a maximum token limit, and our input text is sometimes longer than this limit (when someone comments their heart out), so we would encounter an error. In this case the model's maximum sequence length of 512. Since practically we've only found comments to go as far as 700 characters, we have truncated it, however another, better, solution that we would implement if this were to be a real commercial project, would be to truncate the comment to the maximum length of the model, and then run the model on the truncated comment, and then run the model on the next truncated comment, and so on, effectively analyzing by chunks. Or we could simply use another bert model that accepts more tokens.

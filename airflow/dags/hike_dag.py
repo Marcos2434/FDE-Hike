@@ -23,7 +23,7 @@ from airflow.operators.postgres_operator import PostgresOperator
 
 
 # Increase for production
-REDDIT_API_POST_LIMIT = 4
+REDDIT_API_POST_LIMIT = 5
 
 default_args_dict = {
     'start_date': airflow.utils.dates.days_ago(0),

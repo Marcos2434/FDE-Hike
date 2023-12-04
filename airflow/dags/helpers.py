@@ -272,7 +272,6 @@ def insert_data_mongo_in_neo4j():
         relation_time = Relationship(hike_node, "best_time", time_node)
         graph.create(relation_time)
 
-
         region_node = Node("Region", name=region)
         graph.merge(region_node, "Region", "name")
         relation_region = Relationship(hike_node, "located_in", region_node)
@@ -336,6 +335,13 @@ def offline_reddit_info():
     # offline data is updated on every online run.
     pass
 
+def truncate_string(text, max_length):
+    if len(text) > max_length:
+        truncated_text = text[:max_length]
+        return truncated_text
+    else:
+        return text
+
 def natural_language_processing():
     """
     Performs natural language processing on Reddit posts for each hike.
@@ -375,10 +381,6 @@ def natural_language_processing():
         topic_sentiment_list[hike_name] = {}
         for topic_name, keyword_list in topics.items():
             keyword_counter = Counter()
-
-            
-            total_sentiment_of_topic = 0
-            number_of_posts = len(posts)
             
             # Count keywords in each post
             for post in posts:
@@ -400,18 +402,8 @@ def natural_language_processing():
                                 sentiment_counter[hike_name][lemma] = []
                             
                             if post["content"]:
-                                sentiment = nlp_sentiment(post["content"])[0]['score']
+                                sentiment = nlp_sentiment(truncate_string(post["content"], 512))[0]['score']
                                 sentiment_counter[hike_name][lemma].append(sentiment)
-                                
-                                
-                            # else:
-                            #     number_of_posts -= 1 # if no content, don't count it
-                            
-                            # if not topic_name in topic_sentiment_list[hike_name]:
-                            #     topic_sentiment_list[hike_name][topic_name] = {}
-                            # topic_sentiment_list[hike_name][topic_name] = total_sentiment_of_topic / number_of_posts if number_of_posts > 0 else 0
-                            # print(f"topic_sentiment_list {topic_sentiment_list[hike_name][topic_name]}")
-                    
                 
                 # from comments
                 for comment in post["comments"]:
@@ -424,7 +416,7 @@ def natural_language_processing():
                                 keyword_counter[lemma] += 1
                                 
                                 # sentiment analysis for comment
-                                comment_sentiment = nlp_sentiment(comment["Content"])[0]
+                                comment_sentiment = nlp_sentiment(truncate_string(comment["Content"], 512))[0]['score']
 
                                 if not hike_name in sentiment_counter.keys():
                                     sentiment_counter[hike_name] = {}
@@ -432,7 +424,7 @@ def natural_language_processing():
                                 if not lemma in sentiment_counter[hike_name].keys():
                                     sentiment_counter[hike_name][lemma] = []
                                 
-                                sentiment_counter[hike_name][lemma].append(comment_sentiment['score'])
+                                sentiment_counter[hike_name][lemma].append(comment_sentiment)
 
             
             # Get the 10 most frequent keywords in all posts
@@ -444,12 +436,6 @@ def natural_language_processing():
                 "word": word, 
                 "count": count,
             } for word, count in top_keywords]
-            
-            # for word, count in top_keywords:
-            #     print(word)
-            
-            # sentiment_list = [sentiment_counter[word] for word, _ in top_keywords if word in sentiment_counter.keys()]
-
             
             # Add the list to the dictionary
             all_hikes_keywords[hike_name][topic_name] = top_keywords_and_sentiment_list
@@ -467,12 +453,7 @@ def natural_language_processing():
     output_file_path = os.path.join(DATA_DIR, "sentiment_list.json")
     with open(output_file_path, "w", encoding="utf-8") as f:
         f.write(sentiment_list_json)
-        
-    # topic_sentiment_list_json = json.dumps(topic_sentiment_list, indent=4, ensure_ascii=False)
-    # output_file_path = os.path.join(DATA_DIR, "topic_sentiment_list.json")
-    # with open(output_file_path, "w", encoding="utf-8") as f:
-    #     f.write(topic_sentiment_list_json)
-    
+
 
 
 # def determine_popularity():
@@ -490,9 +471,6 @@ def add_topics_neo4j():
     
     with open(os.path.join(DATA_DIR, 'all_hikes_keywords.json'), 'r') as json_file:
         all_hikes_keywords = json.load(json_file)
-        
-    # with open(os.path.join(DATA_DIR, 'topic_sentiment_list.json'), 'r') as json_file:
-    #     topic_sentiment_list = json.load(json_file)
     
     with open(os.path.join(DATA_DIR, 'sentiment_list.json'), 'r') as json_file:
         sentiment_list = json.load(json_file)
@@ -505,20 +483,7 @@ def add_topics_neo4j():
 
         for topic_name, keywords in topics.items():
             for keyword in keywords:
-                
-                # Legacy
-                # # adding keyword node and relationship for post content
-                # keyword_node = Node("Keyword", 
-                #                     name=keyword['word']:{_id}, 
-                #                     count=keyword['count'],
-                #                     sentiment=topic_sentiment_list[hike_name][keyword['word']],
-                #                 )
-                # _id += 1
-                # graph.merge(keyword_node, "Keyword", "name")
-
-                # relation_keyword = Relationship(hike_node, f'{topic_name}', keyword_node)
-                # graph.create(relation_keyword)
-                
+    
                 # if the keyword is not in the comment sentiment list, skip it
                 if not keyword['word'] in sentiment_list[hike_name].keys(): continue
                 
