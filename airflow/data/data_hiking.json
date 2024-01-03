@@ -13,6 +13,19 @@
     "REGION": "Fraser Valley West"
   },
   {
+    "HIKE NAME": "Al’s Habrich Ridge",
+    "RANKING": "☆☆☆☆",
+    "DIFFICULTY": "Moderate",
+    "DISTANCE (KM)": "6.80",
+    "ELEVATION GAIN (M)": "410",
+    "GRADIENT": "12.06%",
+    "TIME (HOURS)": "2 – 4",
+    "DOGS": "Yes",
+    "4X4": "No",
+    "SEASON": "Year-Round",
+    "REGION": "Howe Sound"
+  },
+  {
     "HIKE NAME": "Aldergrove Regional Park",
     "RANKING": "☆☆",
     "DIFFICULTY": "Very Easy",
@@ -312,6 +325,19 @@
     "REGION": "Fraser Valley West"
   },
   {
+    "HIKE NAME": "Church Mountain",
+    "RANKING": "☆☆☆☆",
+    "DIFFICULTY": "Moderate",
+    "DISTANCE (KM)": "8.00",
+    "ELEVATION GAIN (M)": "550",
+    "GRADIENT": "13.75%",
+    "TIME (HOURS)": "2 – 4",
+    "DOGS": "Yes",
+    "4X4": "Yes",
+    "SEASON": "Summer",
+    "REGION": "Fraser Valley West"
+  },
+  {
     "HIKE NAME": "Cloudburst Mountain",
     "RANKING": "☆☆☆☆",
     "DIFFICULTY": "Difficult",
@@ -492,31 +518,5 @@
     "4X4": "No",
     "SEASON": "Year-Round",
     "REGION": "Fraser Valley West"
-  },
-  {
-    "HIKE NAME": "Diez Vistas",
-    "RANKING": "☆☆☆",
-    "DIFFICULTY": "Moderate",
-    "DISTANCE (KM)": "12.70",
-    "ELEVATION GAIN (M)": "630",
-    "GRADIENT": "9.92%",
-    "TIME (HOURS)": "4 – 6",
-    "DOGS": "Yes",
-    "4X4": "No",
-    "SEASON": "Year-Round",
-    "REGION": "Metro Vancouver"
-  },
-  {
-    "HIKE NAME": "Dog Mountain",
-    "RANKING": "☆☆☆☆",
-    "DIFFICULTY": "Very Easy",
-    "DISTANCE (KM)": "5.60",
-    "ELEVATION GAIN (M)": "165",
-    "GRADIENT": "5.90%",
-    "TIME (HOURS)": "0 – 2",
-    "DOGS": "Yes",
-    "4X4": "No",
-    "SEASON": "Year-Round (Winter Preferred)",
-    "REGION": "Metro Vancouver"
   }
 ]

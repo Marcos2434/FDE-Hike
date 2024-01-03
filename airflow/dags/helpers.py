@@ -73,8 +73,6 @@ def extract_hikes_data(url):
         # removed redis for ingestion
         # redis_client.set('extract_hiking', json_data)
         
-        
-        # save only 5 first hikes
         json_data = json.dumps(table_data[:40], ensure_ascii=False, indent=2)
         with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'w') as json_file:
             json_file.write(json_data)
@@ -82,117 +80,7 @@ def extract_hikes_data(url):
     else:
         print(f"Error: {response.status_code}")
 
-# support function, responsible for transforming the data
-def categorize_time_hours(time_hours):
-    """
-    Categorizes the time in hours into 'Short', 'Medium', or 'Long'.
 
-    Args:
-        time_hours (str): Time in hours.
-
-    Returns:
-        str: Categorized time.
-    """
-    if '0 - 2' in time_hours or '2 - 4' in time_hours:
-        return 'Short'
-    elif '4 - 6' in time_hours or '6 - 8' in time_hours:
-        return 'Medium'
-    else:
-        return 'Long'
-
-# support function, responsible for transforming the data
-def categorize_stars(star_rating):
-    """
-    Categorizes star ratings into 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', or 'Unknown'.
-
-    Args:
-        star_rating (str): Star rating.
-
-    Returns:
-        str: Categorized star rating.
-    """
-    if '☆☆☆☆☆' in star_rating:
-        return 'Excellent'
-    elif '☆☆☆☆' in star_rating:
-        return 'Very Good'
-    elif '☆☆☆' in star_rating:
-        return 'Good'
-    elif '☆☆' in star_rating:
-        return 'Fair'
-    elif '☆' in star_rating:
-        return 'Poor'
-    else:
-        return 'Unknown'
-
-# legacy: postgres
-def _insert():
-    """
-    Legacy function for inserting data into a PostgreSQL database.
-
-    Note: This function is not currently in use.
-    """
-    
-    df = pd.read_json('data/data_hiking.json')
-    with open("/opt/airflow/dags/inserts.sql", "w") as f:
-        f.write(
-            "DROP TABLE IF EXISTS hikes;\n"
-            "CREATE TABLE IF NOT EXISTS hikes (\n"
-            "    Hike_name VARCHAR(255),\n"
-            "    Ranking VARCHAR(255),\n"
-            "    Difficulty VARCHAR(255),\n"
-            "    Distance_km DECIMAL(10, 2),\n"
-            "    Elevation_gain_m DECIMAL(10, 2),\n"
-            "    Gradient VARCHAR(255),\n"
-            "    Time_hours VARCHAR(255),\n"
-            "    Dogs VARCHAR(10),\n"
-            "    _4x4 VARCHAR(255),\n"
-            "    Season VARCHAR(255),\n"
-            "    Region VARCHAR(255)\n"
-            ");\n"
-        )
-
-        for index, row in df.iterrows():
-            hike_name = row['HIKE NAME']
-            ranking = categorize_stars(row['RANKING'])
-            difficulty = row['DIFFICULTY']
-            distance_km = row['DISTANCE (KM)']
-            elevation_gain_m = row['ELEVATION GAIN (M)']
-            gradient = row['GRADIENT']
-            time_hours = f"'{categorize_time_hours(row['TIME (HOURS)'])}'"
-            dogs = row['DOGS']
-            cars = row['4X4']
-            season = row['SEASON']
-            region = row['REGION']
-
-            elevation_gain_m = elevation_gain_m.replace(',', '.')
-
-            f.write(
-                "INSERT INTO hikes VALUES ("
-                f"'{hike_name}', '{ranking}', '{difficulty}', {distance_km}, {elevation_gain_m}, '{gradient}', {time_hours}, '{dogs}', '{cars}', '{season}', '{region}'"
-                ");\n"
-            )
-
-        f.close()
-
-def transformation_redis_hikes(hike_key):
-    """
-    Transforms hiking data and stores it in Redis.
-
-    Args:
-        hike_key (str): The key to store hiking data in Redis.
-    """
-    # data = redis_client.get(hike_key)
-    # hike_data_list = json.loads(data)
-    
-    with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'r') as json_file:
-        hike_data_list = json.load(json_file)
-
-    for hike_data in hike_data_list:
-        hike_data['TIME (HOURS)'] = categorize_time_hours(hike_data['TIME (HOURS)'])
-        hike_data['RANKING'] = categorize_stars(hike_data['RANKING'])
-        hike_data['ELEVATION GAIN (M)'] = hike_data['ELEVATION GAIN (M)'].replace(',', '.')
-
-    redis_client.set(hike_key, json.dumps(hike_data_list))
 
 def insert_mongo():
     """
@@ -220,7 +108,7 @@ def check_internet_connection(**kwargs):
         Any: Result of the executed task.
     """
     try:
-        requests.get("http://www.google.com", timeout=5)
+        requests.get("https://www.google.com", timeout=5)
         return kwargs['online_task']
     except requests.ConnectionError:
         return kwargs['offline_task']
@@ -372,7 +260,7 @@ def natural_language_processing():
     
     # Download the BERT model using transformers
     bert_model = "nlptown/bert-base-multilingual-uncased-sentiment"
-    nlp_sentiment = pipeline('sentiment-analysis', model=bert_model)
+    nlp_sentiment = pipeline('sentiment-analysis', model=bert_model, download_timeout=10000)
     
     topic_sentiment_list = {}
     sentiment_counter = {}
@@ -580,7 +468,120 @@ def aggregate_topics_neo4j():
 
             
             
-    
+
             
-            
+#LEGACY
         
+# support function, responsible for transforming the data
+def categorize_time_hours(time_hours):
+    """
+    Categorizes the time in hours into 'Short', 'Medium', or 'Long'.
+
+    Args:
+        time_hours (str): Time in hours.
+
+    Returns:
+        str: Categorized time.
+    """
+    if '0 - 2' in time_hours or '2 - 4' in time_hours:
+        return 'Short'
+    elif '4 - 6' in time_hours or '6 - 8' in time_hours:
+        return 'Medium'
+    else:
+        return 'Long'
+
+# support function, responsible for transforming the data
+def categorize_stars(star_rating):
+    """
+    Categorizes star ratings into 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor', or 'Unknown'.
+
+    Args:
+        star_rating (str): Star rating.
+
+    Returns:
+        str: Categorized star rating.
+    """
+    if '☆☆☆☆☆' in star_rating:
+        return 'Excellent'
+    elif '☆☆☆☆' in star_rating:
+        return 'Very Good'
+    elif '☆☆☆' in star_rating:
+        return 'Good'
+    elif '☆☆' in star_rating:
+        return 'Fair'
+    elif '☆' in star_rating:
+        return 'Poor'
+    else:
+        return 'Unknown'
+    
+
+def transformation_redis_hikes(hike_key):
+    """
+    Transforms hiking data and stores it in Redis.
+
+    Args:
+        hike_key (str): The key to store hiking data in Redis.
+    """
+    # data = redis_client.get(hike_key)
+    # hike_data_list = json.loads(data)
+    
+    with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'r') as json_file:
+        hike_data_list = json.load(json_file)
+
+    for hike_data in hike_data_list:
+        hike_data['TIME (HOURS)'] = categorize_time_hours(hike_data['TIME (HOURS)'])
+        hike_data['RANKING'] = categorize_stars(hike_data['RANKING'])
+        hike_data['ELEVATION GAIN (M)'] = hike_data['ELEVATION GAIN (M)'].replace(',', '.')
+
+    redis_client.set(hike_key, json.dumps(hike_data_list))
+
+# legacy: postgres
+def _insert():
+    """
+    Legacy function for inserting data into a PostgreSQL database.
+
+    Note: This function is not currently in use.
+    """
+    
+    df = pd.read_json('data/data_hiking.json')
+    with open("/opt/airflow/dags/inserts.sql", "w") as f:
+        f.write(
+            "DROP TABLE IF EXISTS hikes;\n"
+            "CREATE TABLE IF NOT EXISTS hikes (\n"
+            "    Hike_name VARCHAR(255),\n"
+            "    Ranking VARCHAR(255),\n"
+            "    Difficulty VARCHAR(255),\n"
+            "    Distance_km DECIMAL(10, 2),\n"
+            "    Elevation_gain_m DECIMAL(10, 2),\n"
+            "    Gradient VARCHAR(255),\n"
+            "    Time_hours VARCHAR(255),\n"
+            "    Dogs VARCHAR(10),\n"
+            "    _4x4 VARCHAR(255),\n"
+            "    Season VARCHAR(255),\n"
+            "    Region VARCHAR(255)\n"
+            ");\n"
+        )
+
+        for index, row in df.iterrows():
+            hike_name = row['HIKE NAME']
+            ranking = categorize_stars(row['RANKING'])
+            difficulty = row['DIFFICULTY']
+            distance_km = row['DISTANCE (KM)']
+            elevation_gain_m = row['ELEVATION GAIN (M)']
+            gradient = row['GRADIENT']
+            time_hours = f"'{categorize_time_hours(row['TIME (HOURS)'])}'"
+            dogs = row['DOGS']
+            cars = row['4X4']
+            season = row['SEASON']
+            region = row['REGION']
+
+            elevation_gain_m = elevation_gain_m.replace(',', '.')
+
+            f.write(
+                "INSERT INTO hikes VALUES ("
+                f"'{hike_name}', '{ranking}', '{difficulty}', {distance_km}, {elevation_gain_m}, '{gradient}', {time_hours}, '{dogs}', '{cars}', '{season}', '{region}'"
+                ");\n"
+            )
+
+        f.close()
+

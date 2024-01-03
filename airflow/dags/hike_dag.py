@@ -6,7 +6,7 @@ import random
 import json
 
 from helpers import (
-    extract_hikes_data, transformation_redis_hikes, 
+    extract_hikes_data, 
     insert_mongo,insert_data_mongo_in_neo4j, 
     call_reddit_api, natural_language_processing, 
     add_topics_neo4j, check_internet_connection, 
@@ -20,7 +20,6 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
-
 
 # Increase for production
 REDDIT_API_POST_LIMIT = 5
@@ -83,17 +82,6 @@ extract_hikes_online = PythonOperator(
     trigger_rule='all_success',
 )
 
-transform_hikes = PythonOperator(
-    task_id='transform_hikes_data',
-    python_callable=transformation_redis_hikes,
-    op_kwargs={
-        "hike_key": "extract_hiking"
-    },
-    dag=dag,
-    depends_on_past=False,
-    trigger_rule='none_failed',
-)
-
 add_hikes_to_mongo = PythonOperator(
     task_id = "add_hikes_to_mongo",
     dag = dag,
@@ -109,24 +97,6 @@ insert_data_mongo_in_graph = PythonOperator(
     depends_on_past=False,
     trigger_rule='none_failed',
 )
-
-### Legacy: Dags for Postgres
-
-    # generate_script_hikes = PythonOperator(
-    #     task_id='generate_insert',
-    #     dag=dag,
-    #     python_callable=_insert,
-    #     trigger_rule='none_failed',
-    # )
-
-    # load_hikes = PostgresOperator(
-    #     task_id='insert_inserts',
-    #     dag=dag,
-    #     postgres_conn_id='postgres_default',
-    #     sql='inserts.sql',
-    #     trigger_rule='none_failed',
-    #     autocommit=True
-    # )
 
 check_connection_reddit_data = BranchPythonOperator(
     task_id='check_connection_reddit_data',
@@ -192,6 +162,37 @@ end = DummyOperator(
 )
 
 
-start >> check_connection_hikes_data >> [extract_hikes_online, extract_hikes_offline] >> transform_hikes 
-transform_hikes >> add_hikes_to_mongo >> check_connection_reddit_data >> [call_reddit_api_node, reddit_info_offline] >> perform_natural_language_processing 
+start >> check_connection_hikes_data >> [extract_hikes_online, extract_hikes_offline] >> add_hikes_to_mongo >> check_connection_reddit_data >> [call_reddit_api_node, reddit_info_offline] >> perform_natural_language_processing 
 perform_natural_language_processing >> insert_data_mongo_in_graph >> add_topics_graph >> aggregate_topics >> end
+
+
+#LEGACY
+
+# transform_hikes = PythonOperator(
+#     task_id='transform_hikes_data',
+#     python_callable=transformation_redis_hikes,
+#     op_kwargs={
+#         "hike_key": "extract_hiking"
+#     },
+#     dag=dag,
+#     depends_on_past=False,
+#     trigger_rule='none_failed',
+# )
+
+### Legacy: Dags for Postgres
+
+    # generate_script_hikes = PythonOperator(
+    #     task_id='generate_insert',
+    #     dag=dag,
+    #     python_callable=_insert,
+    #     trigger_rule='none_failed',
+    # )
+
+    # load_hikes = PostgresOperator(
+    #     task_id='insert_inserts',
+    #     dag=dag,
+    #     postgres_conn_id='postgres_default',
+    #     sql='inserts.sql',
+    #     trigger_rule='none_failed',
+    #     autocommit=True
+    # )

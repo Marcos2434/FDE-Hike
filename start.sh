@@ -27,7 +27,7 @@ fi
 docker compose up airflow-init
 
 # Start all services (detached/background mode)
-docker compose -f docker-compose.arm64.yaml up --build --force-recreate -d
+docker compose -f docker-compose.arm64.yaml up --build --force-recreate
 
 # Add connections
 docker compose exec airflow-webserver airflow connections add 'postgres_default' --conn-uri 'postgres://airflow:airflow@postgres:5432/airflow'
