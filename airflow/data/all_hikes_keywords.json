@@ -7,6 +7,127 @@
         "weather": [],
         "animals": []
     },
+    "Al’s Habrich Ridge": {
+        "danger": [],
+        "structures": [
+            {
+                "word": "hut",
+                "count": 7
+            },
+            {
+                "word": "station",
+                "count": 4
+            },
+            {
+                "word": "building",
+                "count": 1
+            }
+        ],
+        "landscapes": [
+            {
+                "word": "mountain",
+                "count": 14
+            },
+            {
+                "word": "valley",
+                "count": 6
+            },
+            {
+                "word": "glacier",
+                "count": 5
+            },
+            {
+                "word": "meadow",
+                "count": 4
+            },
+            {
+                "word": "stream",
+                "count": 2
+            },
+            {
+                "word": "lake",
+                "count": 2
+            },
+            {
+                "word": "ridge",
+                "count": 2
+            },
+            {
+                "word": "forest",
+                "count": 2
+            },
+            {
+                "word": "cliff",
+                "count": 1
+            },
+            {
+                "word": "waterfall",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "mountain",
+                "count": 14
+            },
+            {
+                "word": "trail",
+                "count": 10
+            },
+            {
+                "word": "valley",
+                "count": 6
+            },
+            {
+                "word": "glacier",
+                "count": 5
+            },
+            {
+                "word": "snow",
+                "count": 4
+            },
+            {
+                "word": "meadow",
+                "count": 4
+            },
+            {
+                "word": "stream",
+                "count": 2
+            },
+            {
+                "word": "lake",
+                "count": 2
+            },
+            {
+                "word": "ridge",
+                "count": 2
+            },
+            {
+                "word": "forest",
+                "count": 2
+            }
+        ],
+        "weather": [
+            {
+                "word": "dry",
+                "count": 1
+            },
+            {
+                "word": "snowy",
+                "count": 1
+            },
+            {
+                "word": "warm",
+                "count": 1
+            }
+        ],
+        "animals": [
+            {
+                "word": "wild",
+                "count": 3
+            }
+        ]
+    },
     "Aldergrove Regional Park": {
         "danger": [
             {
@@ -196,10 +317,6 @@
                 "count": 2
             },
             {
-                "word": "ridge",
-                "count": 1
-            },
-            {
                 "word": "desert",
                 "count": 1
             },
@@ -218,24 +335,12 @@
                 "count": 6
             },
             {
-                "word": "peak",
-                "count": 3
-            },
-            {
                 "word": "snow",
                 "count": 2
             },
             {
                 "word": "river",
                 "count": 2
-            },
-            {
-                "word": "ridge",
-                "count": 1
-            },
-            {
-                "word": "volcano",
-                "count": 1
             },
             {
                 "word": "desert",
@@ -246,11 +351,19 @@
                 "count": 1
             },
             {
+                "word": "peak",
+                "count": 1
+            },
+            {
                 "word": "wilderness",
                 "count": 1
             },
             {
                 "word": "valley",
+                "count": 1
+            },
+            {
+                "word": "lake",
                 "count": 1
             }
         ],
@@ -310,28 +423,23 @@
                 "count": 1
             }
         ],
-        "structures": [
-            {
-                "word": "cabin",
-                "count": 1
-            }
-        ],
+        "structures": [],
         "landscapes": [
             {
                 "word": "lake",
-                "count": 10
+                "count": 11
             },
             {
                 "word": "mountain",
-                "count": 9
+                "count": 10
             },
             {
                 "word": "cliff",
-                "count": 3
+                "count": 4
             },
             {
                 "word": "glacier",
-                "count": 1
+                "count": 2
             },
             {
                 "word": "valley",
@@ -340,23 +448,27 @@
         ],
         "nature": [
             {
-                "word": "lake",
-                "count": 10
+                "word": "trail",
+                "count": 13
             },
             {
-                "word": "trail",
-                "count": 9
+                "word": "lake",
+                "count": 11
             },
             {
                 "word": "mountain",
-                "count": 9
+                "count": 10
             },
             {
                 "word": "summit",
-                "count": 7
+                "count": 10
             },
             {
                 "word": "snow",
+                "count": 4
+            },
+            {
+                "word": "glacier",
                 "count": 2
             },
             {
@@ -364,15 +476,15 @@
                 "count": 2
             },
             {
-                "word": "glacier",
-                "count": 1
-            },
-            {
                 "word": "valley",
                 "count": 1
             }
         ],
         "weather": [
+            {
+                "word": "cold",
+                "count": 1
+            },
             {
                 "word": "snowy",
                 "count": 1
@@ -400,40 +512,14 @@
     "Bowen Lookout & Yew Lake": {
         "danger": [],
         "structures": [],
-        "landscapes": [
-            {
-                "word": "mountain",
-                "count": 5
-            },
-            {
-                "word": "lake",
-                "count": 2
-            }
-        ],
+        "landscapes": [],
         "nature": [
             {
-                "word": "mountain",
-                "count": 5
-            },
-            {
                 "word": "trail",
-                "count": 4
-            },
-            {
-                "word": "lake",
                 "count": 2
-            },
-            {
-                "word": "peak",
-                "count": 1
             }
         ],
-        "weather": [
-            {
-                "word": "hot",
-                "count": 1
-            }
-        ],
+        "weather": [],
         "animals": []
     },
     "Brandywine Falls": {
@@ -761,6 +847,24 @@
         "weather": [],
         "animals": []
     },
+    "Church Mountain": {
+        "danger": [],
+        "structures": [],
+        "landscapes": [
+            {
+                "word": "cliff",
+                "count": 1
+            }
+        ],
+        "nature": [
+            {
+                "word": "snow",
+                "count": 1
+            }
+        ],
+        "weather": [],
+        "animals": []
+    },
     "Cloudburst Mountain": {
         "danger": [],
         "structures": [],
@@ -1040,11 +1144,16 @@
                 "count": 1
             }
         ],
-        "structures": [],
+        "structures": [
+            {
+                "word": "house",
+                "count": 1
+            }
+        ],
         "landscapes": [
             {
                 "word": "mountain",
-                "count": 11
+                "count": 7
             },
             {
                 "word": "ridge",
@@ -1052,25 +1161,21 @@
             },
             {
                 "word": "river",
-                "count": 2
+                "count": 3
+            },
+            {
+                "word": "valley",
+                "count": 1
             },
             {
                 "word": "hill",
-                "count": 1
-            },
-            {
-                "word": "waterfall",
-                "count": 1
-            },
-            {
-                "word": "cliff",
                 "count": 1
             }
         ],
         "nature": [
             {
                 "word": "mountain",
-                "count": 11
+                "count": 7
             },
             {
                 "word": "ridge",
@@ -1082,10 +1187,14 @@
             },
             {
                 "word": "river",
-                "count": 2
+                "count": 3
             },
             {
                 "word": "snow",
+                "count": 1
+            },
+            {
+                "word": "valley",
                 "count": 1
             },
             {
@@ -1095,19 +1204,11 @@
             {
                 "word": "summit",
                 "count": 1
-            },
-            {
-                "word": "waterfall",
-                "count": 1
             }
         ],
         "weather": [
             {
                 "word": "tornado",
-                "count": 1
-            },
-            {
-                "word": "cloudy",
                 "count": 1
             }
         ],
@@ -1188,63 +1289,6 @@
         "landscapes": [],
         "nature": [],
         "weather": [],
-        "animals": []
-    },
-    "Diez Vistas": {
-        "danger": [],
-        "structures": [
-            {
-                "word": "pier",
-                "count": 1
-            }
-        ],
-        "landscapes": [],
-        "nature": [],
-        "weather": [],
-        "animals": []
-    },
-    "Dog Mountain": {
-        "danger": [
-            {
-                "word": "wildfire",
-                "count": 1
-            },
-            {
-                "word": "frost",
-                "count": 1
-            }
-        ],
-        "structures": [],
-        "landscapes": [
-            {
-                "word": "mountain",
-                "count": 4
-            },
-            {
-                "word": "hill",
-                "count": 1
-            }
-        ],
-        "nature": [
-            {
-                "word": "mountain",
-                "count": 4
-            },
-            {
-                "word": "trail",
-                "count": 3
-            },
-            {
-                "word": "peak",
-                "count": 1
-            }
-        ],
-        "weather": [
-            {
-                "word": "rainy",
-                "count": 2
-            }
-        ],
         "animals": []
     }
 }

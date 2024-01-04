@@ -260,7 +260,7 @@ def natural_language_processing():
     
     # Download the BERT model using transformers
     bert_model = "nlptown/bert-base-multilingual-uncased-sentiment"
-    nlp_sentiment = pipeline('sentiment-analysis', model=bert_model, download_timeout=10000)
+    nlp_sentiment = pipeline('sentiment-analysis', model=bert_model)
     
     topic_sentiment_list = {}
     sentiment_counter = {}
