@@ -18,8 +18,7 @@
 
 ## Introduction
 
-We will be focused on hiking, analyzing the similarities between different routes. We will use information from specialized hiking sites and the Reddit API to enrich our data, including specific features such as geographic information and interesting details such as possible risks associated with each route. We will also employ natural language processing (NLP) techniques to extract valuable information from users' comments regarding their experience.
-
+The technical objective of the project focuses on hiking trails. It aiims to analyze the similarities between different routes using a unique approach. Data is scraped from open-source enthusiast's websites and enriched with data from the Reddit API. Natural Language Processing (NLP) techniques are then used to extract valuable information from users' posts and comments regarding their experience. The final data is then stored in a graph database, Neo4j, which allows for a more efficient querying of the data.
 A graph database was used to establish relationships between routes, regions and features. This can help find similarities between routes and suggest alternatives based on user preferences.
 
 Questions formulated:
