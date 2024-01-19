@@ -88,15 +88,6 @@ services:
   #     - mongo
   #     - redis
   #   restart: always
-
-  notebook:
-    build: notebook/
-    ports:
-      - 8888:8888
-    volumes:
-       - ./:/home/jovyan/work/data
-    environment:
-      - GRANT_SUDO=yesd
     
   neo:
     image: neo4j:5.1.0

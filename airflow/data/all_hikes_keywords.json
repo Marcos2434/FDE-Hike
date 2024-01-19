@@ -640,6 +640,10 @@
             {
                 "word": "ice",
                 "count": 1
+            },
+            {
+                "word": "risk",
+                "count": 1
             }
         ],
         "structures": [
@@ -674,6 +678,10 @@
                 "count": 2
             },
             {
+                "word": "mountain",
+                "count": 2
+            },
+            {
                 "word": "river",
                 "count": 1
             },
@@ -684,23 +692,23 @@
             {
                 "word": "valley",
                 "count": 1
-            },
-            {
-                "word": "mountain",
-                "count": 1
             }
         ],
         "nature": [
             {
                 "word": "trail",
-                "count": 26
+                "count": 27
+            },
+            {
+                "word": "summit",
+                "count": 10
             },
             {
                 "word": "canyon",
                 "count": 9
             },
             {
-                "word": "summit",
+                "word": "snow",
                 "count": 5
             },
             {
@@ -716,19 +724,15 @@
                 "count": 3
             },
             {
-                "word": "snow",
-                "count": 2
-            },
-            {
                 "word": "lake",
                 "count": 2
             },
             {
-                "word": "river",
-                "count": 1
+                "word": "mountain",
+                "count": 2
             },
             {
-                "word": "valley",
+                "word": "river",
                 "count": 1
             }
         ],
@@ -736,6 +740,10 @@
             {
                 "word": "hot",
                 "count": 7
+            },
+            {
+                "word": "warm",
+                "count": 6
             },
             {
                 "word": "dry",
@@ -746,17 +754,17 @@
                 "count": 1
             },
             {
-                "word": "warm",
+                "word": "cold",
                 "count": 1
             }
         ],
         "animals": [
             {
-                "word": "pride",
-                "count": 4
+                "word": "pack",
+                "count": 6
             },
             {
-                "word": "pack",
+                "word": "pride",
                 "count": 4
             },
             {
@@ -967,7 +975,7 @@
         "landscapes": [
             {
                 "word": "mountain",
-                "count": 13
+                "count": 12
             },
             {
                 "word": "valley",
@@ -989,11 +997,11 @@
         "nature": [
             {
                 "word": "trail",
-                "count": 24
+                "count": 22
             },
             {
                 "word": "mountain",
-                "count": 13
+                "count": 12
             },
             {
                 "word": "summit",

@@ -44,7 +44,7 @@ For this project we utilize 2 datasources:
     - Season
     - Region
 
-2. We use Reddit publications for data enrichment. The Reddit API was accessed using the Python library called PRAW ([praw.readthedocs.io](https://praw.readthedocs.io/en/stable/)), providing us with information such as:
+2. We use Reddit publications for data enrichment. The Reddit API was accessed using the Python library called ([PRAW](https://praw.readthedocs.io/en/stable/)), providing us with information such as:
 
     - Title
     - Upvotes
@@ -234,7 +234,7 @@ In this case with the topic of animals. From this we can infer that the hike "Bl
 
 ## How to run
 
-Run the Docker daemon, then...
+Run the Docker daemon,Our program needs approximately 8GB of ram so we recommend checking it, you can check it in the docker dashboard in the settings >> resources section, then...
 
 ## Automatic startup
 ### MacOS / Linux 
@@ -296,7 +296,3 @@ After it is up, add a new connection:
 * Database - airflow
 * Username - airflow
 * Password - airflow
-
-```sh
-docker-compose up -d --no-deps --build flask-app
-```
