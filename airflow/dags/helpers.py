@@ -67,13 +67,26 @@ def extract_hikes_data(url):
                     row_data[headers[i]] = cells[i].get_text(strip=True)
                 table_data.append(row_data)
 
-        # Convert to JSON
-        json_data = json.dumps(table_data, ensure_ascii=False, indent=2)
+        # Convert all the data to JSON
+        #json_data = json.dumps(table_data, ensure_ascii=False, indent=2)
         
+        #LEGACY
         # removed redis for ingestion
         # redis_client.set('extract_hiking', json_data)
-        
+                
+        #Convert the first 40 records to JSON
         json_data = json.dumps(table_data[:40], ensure_ascii=False, indent=2)
+        json_data = json.loads(json_data)
+
+        for hike in json_data:
+            print(hike)
+            if "TIME (HOURS)" in hike:
+                hike["TIME (HOURS)"] = hike["TIME (HOURS)"].replace('8 -10', '8 – 10')
+        
+        json_data = json.dumps(json_data, indent=2, ensure_ascii=False)
+
+
+
         with open(os.path.join(DATA_DIR, 'data_hiking.json'), 'w') as json_file:
             json_file.write(json_data)
 

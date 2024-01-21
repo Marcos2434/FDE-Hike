@@ -44,7 +44,7 @@ For this project we utilize 2 datasources:
     - Season
     - Region
 
-2. We use Reddit publications for data enrichment. The Reddit API was accessed using the Python library called ([PRAW](https://praw.readthedocs.io/en/stable/)), providing us with information such as:
+2. We use Reddit publications for data enrichment. The Reddit API was accessed using the Python library called,[PRAW](https://praw.readthedocs.io/en/stable/), providing us with information such as:
 
     - Title
     - Upvotes
@@ -91,7 +91,7 @@ During the Cleansing process, we focused on determining which fields would be he
   - Season
 
 #### Transformations
-We also had the initiative to make transformations to certain fields (Ranking and Time (Hours)) but we decided that the initial form of the data gave a better understanding.
+We also had the initiative to make transformations to certain fields (Ranking and Time (Hours)) but we decided that the initial form of the data gave a better understanding.Only a small modification was necessary. During the extraction process on the web page, a small problem related to the lack of a space inside the string in the 'Time (Hours)' column was corrected.
 
 #### Enrichments
 In this section, we make the most of the data collected from Reddit posts.
@@ -183,7 +183,21 @@ RETURN hike, region;
 
 This query retrieves hikes located in a specific region (Pacific Northwest in this example). Adjust the region name accordingly.
 
-## 7. Retrieve Hikes Suitable for a Specific Time:
+## 7. Compare Hikes in a region:
+```cypher
+MATCH (hike:Hike)-[:located_in]->(region:Region)
+WHERE region.name = 'Howe Sound'
+MATCH (hike)-[:has_difficulty]->(difficulty:Difficulty)
+MATCH (hike)-[:nature_avg]->(avgKeyword:Keyword_avg {sentiment_discrete: 'positive_sentiment'})
+MATCH (hike)-[:best_time]->(time:Time)
+RETURN hike, difficulty, region, avgKeyword, time;
+```
+![Compare Hikes in a region](./static/11.png)
+
+This query retrieves hiking trails found in the "Howe Sound" region, showing how positively they are rated in the nature categories by reddit users. It also provides information on the approximate duration of the route and the associated difficulty. 
+Based on this, one could recommend the hiking trail called "Al's Habrich Ridge". Since this hiking trail has more positive comments compared to the other hikes, it is of reasonable length and moderate difficulty.
+
+## 8. Retrieve Hikes Suitable for a Specific Time:
 ```cypher
 MATCH (hike:Hike)-[:best_time]->(time:Time)
 WHERE time.hours = '6 – 8'
@@ -193,7 +207,7 @@ RETURN hike, time;
 
 This query retrieves hikes recommended for a specific time of day (8-10 / Morning in this example). Modify the time name as needed.
 
-## 8. Retrieve Keywords and Their Sentiment for a Hike:
+## 9. Retrieve Keywords and Their Sentiment for a Hike:
 ```cypher
 MATCH (hike:Hike {name: 'Blanca Lake & Peak'})-[:nature]->(keyword:Keyword)
 RETURN hike, keyword.name, keyword.sentiment;
@@ -202,7 +216,8 @@ RETURN hike, keyword.name, keyword.sentiment;
 
 This query retrieves keywords and their sentiment for a specific hike ('Example Hike' in this example).
 
-## 9. Retrieve Average Sentiment for All Keywords Across Hikes:
+
+## 10. Retrieve Average Sentiment for All Keywords Across Hikes:
 ```cypher
 MATCH (avgKeyword:Keyword_avg)
 RETURN avgKeyword.name, avgKeyword.sentiment;
@@ -211,7 +226,7 @@ RETURN avgKeyword.name, avgKeyword.sentiment;
 
 This query retrieves the average sentiment for all keywords across all hikes.
 
-## 10. Retrieve Hikes with Overall Positive Sentiment on a certain topic:
+## 11. Retrieve Hikes with Overall Positive Sentiment on a certain topic:
 ```cypher
 MATCH (hike:Hike)-[:animals_avg]->(avgKeyword:Keyword_avg)
 WHERE avgKeyword.sentiment_discrete = 'positive_sentiment'
@@ -222,6 +237,30 @@ RETURN hike, avgKeyword;
 This query retrieves hikes associated with keyword topics that have an overall positive sentiment.
 In this case with the topic of animals. From this we can infer that the hike "Blackcomb Peak & The Spearhead" has birds and since
 "birds" has an average sentiment of ~0.6 or, a "positive_sentiment", then we can safely assume that it is good for bird watching
+
+## 11. Identify the Best Snow Hikes in Different Regions:
+```cypher
+MATCH (hike:Hike)-[:located_in]->(region:Region)
+MATCH (hike)-[:has_difficulty]->(difficulty:Difficulty)
+MATCH (hike)-[:nature_avg]->(avgKeyword:Keyword_avg {name: 'snow'})
+MATCH (hike)-[:ranked]->(ranking:Ranking)
+RETURN hike, difficulty, region, avgKeyword, ranking;
+```
+![Identify the Best Snow Hikes in Different Regions](./static/12.png)
+
+```cypher
+MATCH (hike:Hike)-[:located_in]->(region:Region)
+MATCH (hike)-[:has_difficulty]->(difficulty:Difficulty)
+MATCH (hike)-[:nature_avg]->(avgKeyword:Keyword_avg {name: 'snow'})
+MATCH (hike)-[:ranked]->(ranking:Ranking {value: "☆☆☆☆☆"})
+RETURN hike, difficulty, region, avgKeyword, ranking;
+```
+
+![Identify the Best Snow Hikes in Different Regions](./static/13.png)
+
+This query provides us with the best snowy hiking trails in various regions based on comments from Reddit users. In addition, the rating and difficulty level of each route is included.
+To recommend the most outstanding routes where you can enjoy snow and know which regions they belong to, "Blackcomb Peak & The Spearhead" or "Brunswick Mountain" are suggested. The choice between the two will depend on the desired level of difficulty, as both routes have a 5-star rating.
+
 
 ### Project Submission Checklist
 
