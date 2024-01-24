@@ -61,7 +61,7 @@ On the other hand, we create ".csv" files that will help us to identify specific
 
 ## Pipeline
 
-![Pipeline](./static/Pipeline_Hike.png)
+![Pipeline](./static/Hike_Pipeline.png)
 
 ### Ingestion
 
