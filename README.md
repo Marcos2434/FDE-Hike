@@ -1,5 +1,6 @@
 # FDE-Hike
 
+- [Running the submission](#runningthesubmission)
 - [Introduction](#introduction)
 - [Data sources](#datasources)
 - [Pipeline](#pipeline)
@@ -15,6 +16,10 @@
   - [Automatic](#automatic)
   - [Manual](#manual)
 
+
+## Running the submission
+
+Clone the repository to run at https://github.com/Marcos2434/FDE-Hike !!!
 
 ## Introduction
 
